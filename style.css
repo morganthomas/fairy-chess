@@ -1,0 +1,33 @@
+#chess-board {
+  position: relative;
+  width: 512px;
+}
+
+#chess-board table {
+  border-spacing: 0;
+}
+
+.chess-square {
+  width: 64px;
+  height: 64px;
+  margin: 0;
+  padding: 0;
+  /*border: 2px solid black;*/
+}
+
+.chess-row {
+  margin: 0;
+  padding: 0;
+}
+
+.black-square {
+  background-color: grey;
+}
+
+.white-square {
+  background-color: white;
+}
+
+.chess-piece {
+  position: absolute;
+}
