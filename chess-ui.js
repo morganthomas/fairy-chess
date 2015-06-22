@@ -1,5 +1,8 @@
 // Every piece object in the DOM has the class .chess-piece.
 
+// The size of the left border of the chess squares.
+var LEFT_BORDER_WIDTH_PX = 1;
+
 // Displays a given game state.
 function displayState(state) {
   var board = state.board;
@@ -46,22 +49,24 @@ function displayPiece(loc, piece) {
   var pieceJ = $('<div class="chess-piece"><img src="' +
     pieceImageName(piece) + '"></div>');
   pieceJ.css("top", (7 - loc.row) * SQUARE_SIZE + "px");
-  pieceJ.css("left", loc.col * SQUARE_SIZE + "px");
+  pieceJ.css("left", (loc.col * SQUARE_SIZE - LEFT_BORDER_WIDTH_PX)
+    + "px");
   // Necessary to prevent the browser from interpreting the user as
   // attempting an image drag when they drag a piece.
   pieceJ.on('dragstart', function(event) {
     event.preventDefault();
   });
-  $("#chess-board").append(pieceJ);
+  $("#chess-board-origin").append(pieceJ);
 }
 
 // Converts mouse coordinates to a location on the chess board, assuming
 // the mouse coordinates are within the chess board.
 function mouseToLoc(mouseX, mouseY) {
-  boardPos = $("#chess-board").position();
+  boardPos = $("#chess-board-origin").position();
   console.log("Mouse: " + mouseX + ", " + mouseY);
   return { row: 7 - Math.floor((mouseY - boardPos.top) / SQUARE_SIZE),
-           col: Math.floor((mouseX - boardPos.left) / SQUARE_SIZE) };
+           col: Math.floor((mouseX - (boardPos.left + LEFT_BORDER_WIDTH_PX))
+                                / SQUARE_SIZE) };
 }
 
 $(document).ready(function() {

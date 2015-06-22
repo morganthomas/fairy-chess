@@ -1,10 +1,32 @@
+body {
+  background-color: lightgrey;
+  padding: 0;
+}
+
+.page {
+  background-color: white;
+  width: 600px;
+  padding: 50px;
+  margin: auto;
+}
+
+.main-header {
+  text-align: center;
+  /*color: #282828;*/
+  font-family: sans-serif;
+}
+
 #chess-board {
-  position: relative;
-  width: 512px;
+  width: 562px; /* 25 + 8*64 + 25 */
+  margin: auto;
 }
 
 #chess-board table {
   border-spacing: 0;
+}
+
+#chess-board-origin {
+  position: relative;
 }
 
 .chess-square {
@@ -13,6 +35,24 @@
   margin: 0;
   padding: 0;
   /*border: 2px solid black;*/
+}
+
+/* Change LEFT_BORDER_WIDTH_PX in chess-ui.js if you change the width
+    of this border. */
+.col-0 {
+  border-left: 1px solid grey;
+}
+
+.col-7 {
+  border-right: 1px solid grey;
+}
+
+#row-7 .chess-square {
+  border-top: 1px solid grey;
+}
+
+#row-0 .chess-square {
+  border-bottom: 1px solid grey;
 }
 
 .chess-row {
@@ -30,4 +70,16 @@
 
 .chess-piece {
   position: absolute;
+}
+
+.row-number, .column-letters td {
+  font-family: sans-serif;
+  text-align: center;
+  font-size: 12pt;
+  color: #444;
+}
+
+.row-number {
+  width: 25px; /* The width of #chess-board depends on this */
+  padding: 0;
 }

@@ -1,44 +1,17 @@
+// Status:
+//  * Move execution is completely implemented, but not tested for moves
+//    that are not yet generated.
+//  * Moves still to be generated are double pawn moves, pawn captures,
+//    en passant, and castling.
+//  * Checking for check and testing for legal moves are not
+//    implemented.
+
 //
 // Utility
 //
 
 // An iterator is a function which will return the next thing in the iteration,
 // or null when it's done.
-
-// List combinators
-// XXX: Remove if decide not to use
-
-function map(f, xs) {
-  var ys = new Array(xs.length);
-
-  for (var i = 0; i < xs.length; i++) {
-    ys[i] = f(xs[i]);
-  }
-
-  return ys;
-}
-
-function foldl(reducer, start, xs) {
-  var result = start;
-
-  for (var i = 0; i < xs.length; i++) {
-    result = reducer(result, xs[i]);
-  }
-
-  return result;
-}
-
-function filter(pred, xs) {
-  var result = [];
-
-  for (var i = 0; i < xs.length; i++) {
-    if (pred(xs[i])) {
-      result.push(xs[i]);
-    }
-  }
-
-  return result;
-}
 
 //
 // Types
@@ -53,6 +26,14 @@ function colorOpponent(color) {
     return WHITE;
   } else {
     return BLACK;
+  }
+}
+
+function colorAdvanceDir(color) {
+  if (color == BLACK) {
+    return -1;
+  } else {
+    return 1;
   }
 }
 
@@ -108,12 +89,32 @@ function locEq(loc1, loc2) {
 // More types:
 //
 // Piece:
-//   A piece is an object with properties color, rank, and loc.
+//   A piece is an object with properties:
+//     color: The piece's color.
+//     rank: The piece's rank.
+//     loc: The board location the piece inhabits.
+//     hasBeenMoved: A boolean saying whether the piece has been moved
+//       on a previous turn. Used with kings and rooks for determining
+//       whether castling is legal.
+//     justMovedDoubly: true for pawns which were moved doubly on the
+//       last turn, and false for all other pieces. Used for determining
+//       whether en passant is legal.
+//
+//   In addition, a pawn may have the property justMovedDoubly set to
+//   true on the turn after it was moved doubly, to determine whether en
+//   passant is legal.
 //
 // BoardConfig:
 //   A board configuration is an object with methods get() and set() taking
 //   board locations. The contents of a square are a piece or null.
 //
+
+// Makes a new piece given just color, rank, and location, setting
+// hasBeenMoved to false and justMovedDoubly to false.
+function makePiece(color, rank, loc) {
+  return { color: color, rank: rank, loc: loc, hasBeenMoved: false,
+    justMovedDoubly: false };
+}
 
 // Duplicates a piece.
 function copyPiece(piece) {
@@ -121,6 +122,8 @@ function copyPiece(piece) {
   newPiece.color = piece.color;
   newPiece.rank = piece.rank;
   newPiece.loc = piece.loc;
+  newPiece.hasBeenMoved = piece.hasBeenMoved;
+  newPiece.justMovedDoubly = piece.justMovedDoubly;
   return newPiece;
 }
 
@@ -162,10 +165,9 @@ function makeBoardConfig() {
 // GameState:
 //   A game state is an object with properties:
 //     board: A board configuration.
-//     kingsAndRooksMoved: An array of pieces.
-//     pawnsJustMovedDoubly: An array of pieces.
 //     kingLocs: An object with properties BLACK and WHITE giving the location
-//       of the black and white kings.
+//       of the black and white kings. Efficiently finding the kings is
+//       useful for determining whether a player is in check.
 //     playerToMove: Player whose turn it is (i.e., their color).
 //
 // Move:
@@ -173,7 +175,9 @@ function makeBoardConfig() {
 //     piece
 //     newLoc
 //     flag: A movement flag, or null.
+//   And optional properties:
 //     promotionTo: Gives the rank to promote the pawn to, for a pawn promotion.
+//     involvedRook: The rook involved in a castle move.
 //
 //   A castle is represented by the move of the king.
 //
@@ -181,12 +185,10 @@ function makeBoardConfig() {
 //
 // Movement flags:
 //
-var KING_MOVE = "king move";
-var ROOK_MOVE = "rook move";
 var PAWN_DOUBLE_MOVE = "pawn double move";
 var EN_PASSANT = "en passant";
-var CASTLE = "castle";
 var PAWN_PROMOTION = "pawn promotion";
+var CASTLE = "castle";
 
 // Says whether two moves are equal.
 function moveEq(move1, move2) {
@@ -208,7 +210,7 @@ function makeStartingBackRow(board, color, row) {
   for (var col = 0; col <= 7; col++) {
     var loc = { row: row, col: col };
     board.set(loc,
-      { color: color, rank: startingBackRow[col], loc: loc });
+      makePiece(color, startingBackRow[col], loc));
   }
 }
 
@@ -216,7 +218,7 @@ function makePawnRow(board, color, row) {
   for (var col = 0; col <= 7; col++) {
     var loc = { row: row, col: col };
     board.set(loc,
-      { color: color, rank: PAWN, loc: loc });
+      makePiece(color, PAWN, loc));
   }
 }
 
@@ -246,7 +248,7 @@ function makeStartingGameState() {
   return {
     board: makeStartingBoardConfig(),
     kingsAndRooksMoved: [],
-    pawnsJustMovedDoubly: [],
+    pawnJustMovedDoubly: null,
     kingLocs: {
       W: { row: 0, col: 4 },
       B: { row: 0, col: 4 }
@@ -408,16 +410,16 @@ function moveIsAllowed(state, spec, controller, piece) {
 // controller, and a piece. It returns all moves specified by one of the
 // specs which are allowed for the given piece in the given state by the
 // given controller. It can specify the semi-legal moves for pieces with
-// simple movement rules. It returns an array of moves. It does not give
-// a flag to the moves it produces.
-function findMoves(state, specs, controller, piece) {
+// simple movement rules. It returns an array of moves. It takes a flag
+// which is applied to all of the moves.
+function findMoves(state, specs, controller, piece, flag) {
   var moves = [];
 
   for (var i = 0; i < specs.length; i++) {
     if (moveIsAllowed(state, specs[i], controller, piece)) {
       moves.push({ piece: piece,
         newLoc: specToLoc(piece.loc, specs[i]),
-        flag: null });
+        flag: flag });
     }
   }
 
@@ -456,7 +458,7 @@ semiLegalMoveFunctions[PAWN] = function(state, piece) {
 };
 
 semiLegalMoveFunctions[ROOK] = function(state, piece) {
-  return findMoves(state, straightLineMoves, canCaptureControl, piece);
+  return findMoves(state, straightLineMoves, canCaptureControl, piece, null);
 };
 
 var knightMoveSpecs = function() {
@@ -483,16 +485,16 @@ var knightMoveSpecs = function() {
 }();
 
 semiLegalMoveFunctions[KNIGHT] = function(state, piece) {
-  return findMoves(state, knightMoveSpecs, knightMoveControl, piece);
+  return findMoves(state, knightMoveSpecs, knightMoveControl, piece, null);
 };
 
 semiLegalMoveFunctions[BISHOP] = function(state, piece) {
-  return findMoves(state, diagonalMoves, canCaptureControl, piece);
+  return findMoves(state, diagonalMoves, canCaptureControl, piece, null);
 };
 
 semiLegalMoveFunctions[QUEEN] = function(state, piece) {
   return findMoves(state, diagonalMoves.concat(straightLineMoves),
-    canCaptureControl, piece);
+    canCaptureControl, piece, null);
 };
 
 var kingMoveSpecs = function() {
@@ -514,7 +516,7 @@ var kingMoveSpecs = function() {
 
 semiLegalMoveFunctions[KING] = function(state, piece) {
   // XXX: castling
-  return findMoves(state, kingMoveSpecs, canCaptureControl, piece);
+  return findMoves(state, kingMoveSpecs, canCaptureControl, piece, null);
 };
 
 // Says whether the given move is semi-legal in the given state.
@@ -541,6 +543,58 @@ function moveIsLegal(state, move) {
 }
 
 //
+// Execution of moves
+//
+
+// Takes a state and a move, which is assumed to be legal. Updates the
+// state in place to reflect the result of making the move.
+// Does not change the active player if doNotChangePlayerToMove is true.
+function executeMove(state, move, doNotChangePlayerToMove) {
+  state.board.set(move.piece.loc, null);
+  var newPiece = movedPiece(move.piece, move.newLoc);
+  state.board.set(move.newLoc, newPiece);
+
+  newPiece.hasBeenMoved = true;
+
+  if (move.flag === PAWN_DOUBLE_MOVE) {
+    newPiece.justMovedDoubly = true;
+  } else {
+    newPiece.justMovedDoubly = false;
+  }
+
+  if (move.flag === EN_PASSANT) {
+    state.board.set(
+      locPlus(move.loc, { row: -colorAdvanceDir(newPiece.color), col: 0 }),
+      null);
+  }
+
+  if (move.flag === PAWN_PROMOTION) {
+    newPiece.rank = move.promotionTo;
+  }
+
+  if (move.flag === CASTLE) {
+    var moveHorizontalDelta = newPiece.loc - piece.loc;
+    var moveHorizontalDir = moveHorizontalDelta / Math.abs(moveHorizontalDelta);
+    var newRookLoc = { row: move.involvedRook.loc.row,
+        col: locPlus(newPiece.loc, { row: 0, col: -moveHorizontalDir }) };
+    executeMove(state,
+      { piece: move.involvedRook, newLoc: newRookLoc, flag: null },
+      true // Do not change whose turn it is.
+    );
+  }
+
+  // We can assume the other king is still where it was, because in
+  // particular it wasn't captured, by our assumption that the move is legal.
+  if (newPiece.rank === KING) {
+    state.kingLocs[newPiece.color] = newPiece.loc;
+  }
+
+  if (!doNotChangePlayerToMove) {
+    state.playerToMove = colorOpponent(state.playerToMove);
+  }
+}
+
+//
 // Game object
 //
 
@@ -550,14 +604,8 @@ function Game() {
   // Takes a move and, if the move is legal, performs it and updates the
   // starting game state. It returns true if it did this, and false otherwise.
   this.performMove = function(move) {
-    var board = this.state.board;
-
     if (moveIsSemiLegal(this.state, move)) {
-      // XXX: implement special cases (castling, en passant, pawn promotion)
-      board.set(move.piece.loc, null);
-      board.set(move.newLoc,
-        movedPiece(move.piece, move.newLoc));
-      this.state.playerToMove = colorOpponent(this.state.playerToMove);
+      executeMove(this.state, move);
     }
   };
 }

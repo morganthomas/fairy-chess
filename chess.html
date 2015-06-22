@@ -13,10 +13,21 @@
 
 <body>
 
+<div class="page">
+
+<h1 class="main-header">Computer-Aided Chess</h1>
+
 <div id="chess-board">
 <table>
+  <tr class="chess-row column-letters">
+    <td></td>
+    <td>a</td><td>b</td><td>c</td><td>d</td><td>e</td><td>f</td><td>g</td><td>h</td>
+  </tr>
   <tr class="chess-row odd-row" id="row-7">
-    <td class="chess-square white-square col-0"></td>
+    <td class="row-number">8</td>
+    <!-- This cell's upper left corner is the origin that the game uses
+         for mapping between screen coordinates and board locations. -->
+    <td class="chess-square white-square col-0" id="chess-board-origin"></td>
     <td class="chess-square black-square col-1"></td>
     <td class="chess-square white-square col-2"></td>
     <td class="chess-square black-square col-3"></td>
@@ -24,8 +35,10 @@
     <td class="chess-square black-square col-5"></td>
     <td class="chess-square white-square col-6"></td>
     <td class="chess-square black-square col-7"></td>
+    <td class="row-number">8</td>
   </tr>
   <tr class="chess-row even-row" id="row-6">
+    <td class="row-number">7</td>
     <td class="chess-square black-square col-0"></td>
     <td class="chess-square white-square col-1"></td>
     <td class="chess-square black-square col-2"></td>
@@ -34,8 +47,10 @@
     <td class="chess-square white-square col-5"></td>
     <td class="chess-square black-square col-6"></td>
     <td class="chess-square white-square col-7"></td>
+    <td class="row-number">7</td>
   </tr>
   <tr class="chess-row odd-row" id="row-5">
+    <td class="row-number">6</td>
     <td class="chess-square white-square col-0"></td>
     <td class="chess-square black-square col-1"></td>
     <td class="chess-square white-square col-2"></td>
@@ -44,8 +59,10 @@
     <td class="chess-square black-square col-5"></td>
     <td class="chess-square white-square col-6"></td>
     <td class="chess-square black-square col-7"></td>
+    <td class="row-number">6</td>
   </tr>
   <tr class="chess-row even-row" id="row-4">
+    <td class="row-number">5</td>
     <td class="chess-square black-square col-0"></td>
     <td class="chess-square white-square col-1"></td>
     <td class="chess-square black-square col-2"></td>
@@ -54,8 +71,10 @@
     <td class="chess-square white-square col-5"></td>
     <td class="chess-square black-square col-6"></td>
     <td class="chess-square white-square col-7"></td>
+    <td class="row-number">5</td>
   </tr>
   <tr class="chess-row odd-row" id="row-3">
+    <td class="row-number">4</td>
     <td class="chess-square white-square col-0"></td>
     <td class="chess-square black-square col-1"></td>
     <td class="chess-square white-square col-2"></td>
@@ -64,8 +83,10 @@
     <td class="chess-square black-square col-5"></td>
     <td class="chess-square white-square col-6"></td>
     <td class="chess-square black-square col-7"></td>
+    <td class="row-number">4</td>
   </tr>
   <tr class="chess-row even-row" id="row-2">
+    <td class="row-number">3</td>
     <td class="chess-square black-square col-0"></td>
     <td class="chess-square white-square col-1"></td>
     <td class="chess-square black-square col-2"></td>
@@ -74,8 +95,10 @@
     <td class="chess-square white-square col-5"></td>
     <td class="chess-square black-square col-6"></td>
     <td class="chess-square white-square col-7"></td>
+    <td class="row-number">3</td>
   </tr>
   <tr class="chess-row odd-row" id="row-1">
+    <td class="row-number">2</td>
     <td class="chess-square white-square col-0"></td>
     <td class="chess-square black-square col-1"></td>
     <td class="chess-square white-square col-2"></td>
@@ -84,8 +107,10 @@
     <td class="chess-square black-square col-5"></td>
     <td class="chess-square white-square col-6"></td>
     <td class="chess-square black-square col-7"></td>
+    <td class="row-number">2</td>
   </tr>
   <tr class="chess-row even-row" id="row-0">
+    <td class="row-number">1</td>
     <td class="chess-square black-square col-0"></td>
     <td class="chess-square white-square col-1"></td>
     <td class="chess-square black-square col-2"></td>
@@ -94,8 +119,15 @@
     <td class="chess-square white-square col-5"></td>
     <td class="chess-square black-square col-6"></td>
     <td class="chess-square white-square col-7"></td>
+    <td class="row-number">1</td>
+  </tr>
+  <tr class="chess-row column-letters">
+    <td></td>
+    <td>a</td><td>b</td><td>c</td><td>d</td><td>e</td><td>f</td><td>g</td><td>h</td>
   </tr>
 </table>
+</div>
+
 </div>
 
 </body>
