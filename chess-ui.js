@@ -62,7 +62,7 @@ function displayPiece(loc, piece) {
 // Converts mouse coordinates to a location on the chess board, assuming
 // the mouse coordinates are within the chess board.
 function mouseToLoc(mouseX, mouseY) {
-  boardPos = $("#chess-board-origin").position();
+  var boardPos = $("#chess-board-origin").position();
   console.log("Mouse: " + mouseX + ", " + mouseY);
   return { row: 7 - Math.floor((mouseY - boardPos.top) / SQUARE_SIZE),
            col: Math.floor((mouseX - (boardPos.left + LEFT_BORDER_WIDTH_PX))
@@ -78,30 +78,34 @@ $(document).ready(function() {
     displayState(game.state);
   }
 
-  // Moves the piece at loc1, if there is any such piece, to loc2.
-  function executeMove(loc1, loc2) {
-    var piece = game.state.board.get(loc1);
-
-    if (piece) {
-      // XXX: Implement flags for special cases.
-      game.performMove({ piece: piece, newLoc: loc2, flag: null });
-    }
-
-    refreshDisplay();
-  }
-
-  $("#chess-board").mousedown(function (downEvent) {
+  $("#chess-board").on("mousedown", ".chess-piece", function (downEvent) {
     startLoc = mouseToLoc(downEvent.pageX, downEvent.pageY);
     console.log("Start: " + startLoc.row + ", " + startLoc.col);
     processingPieceDrag = true;
     dragStartLoc = startLoc;
+    var piece = $(this);
+    var boardPos = $("#chess-board-origin").position();
+
+    $('body').on("mousemove", function(moveEvent) {
+      piece.css("top", (moveEvent.pageY - (SQUARE_SIZE / 2) - boardPos.top) + "px");
+      piece.css("left", (moveEvent.pageX - (SQUARE_SIZE / 2) - boardPos.left) + "px");
+    });
   });
 
-  $("#chess-board").mouseup(function(upEvent) {
+  $("#chess-board").on("mouseup", function(upEvent) {
     if (processingPieceDrag) {
       endLoc = mouseToLoc(upEvent.pageX, upEvent.pageY);
       console.log("End: " + endLoc.row + ", " + endLoc.col);
-      executeMove(dragStartLoc, endLoc);
+
+      // XXX: Provide pawn promotion callback.
+      var move = createMove(game.state, dragStartLoc, endLoc, null);
+
+      if (move) {
+        game.performMove(move);
+      }
+
+      refreshDisplay();
+
       processingPieceDrag = false;
       dragStartLoc = null;
     }

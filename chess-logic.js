@@ -595,6 +595,28 @@ function executeMove(state, move, doNotChangePlayerToMove) {
 }
 
 //
+// Move construction
+//
+
+// Given a game state and start and end board locations, creates a move
+// from the one location to the other, applying the appropriate flags.
+// Returns null if there is no piece at the starting location or one of the
+// locations is out of bounds. Takes a callback to give the rank to promote
+// the pawn to if the move is a pawn promotion.
+function createMove(state, loc1, loc2, promotionCallback) {
+  if (inBounds(loc1) && inBounds(loc2)) {
+    var piece = state.board.get(loc1);
+
+    if (piece) {
+      // XXX: add flags
+      return { piece: piece, newLoc: loc2, flag: null };
+    }
+  }
+
+  return null;
+}
+
+//
 // Game object
 //
 
