@@ -5,17 +5,14 @@ var LEFT_BORDER_WIDTH_PX = 1;
 
 // Displays a given game state.
 function displayState(state) {
-  var board = state.board;
-  var iter = allBoardLocs();
-
   hideAllPieces(state);
 
-  for (var loc = iter(); loc; loc = iter()) {
-    var piece = board.get(loc);
+  allBoardLocs.forEach(function(loc) {
+    var piece = state.board.get(loc);
     if (piece) {
       displayPiece(loc, piece);
     }
-  }
+  });
 }
 
 // Removes all piece objects from the DOM.
@@ -63,7 +60,6 @@ function displayPiece(loc, piece) {
 // the mouse coordinates are within the chess board.
 function mouseToLoc(mouseX, mouseY) {
   var boardPos = $("#chess-board-origin").position();
-  console.log("Mouse: " + mouseX + ", " + mouseY);
   return { row: 7 - Math.floor((mouseY - boardPos.top) / SQUARE_SIZE),
            col: Math.floor((mouseX - (boardPos.left + LEFT_BORDER_WIDTH_PX))
                                 / SQUARE_SIZE) };
@@ -105,7 +101,7 @@ function UIGameState() {
       var move = createMove(uiState.game.state, uiState.dragStartLoc, endLoc, null);
 
       if (move) {
-        uiState.game.performMove(move);
+        console.log(uiState.game.performMove(move));
       }
 
       uiState.refreshDisplay();
@@ -119,23 +115,17 @@ function UIGameState() {
       uiState.pieceBeingDragged.css("left", (moveEvent.pageX - (SQUARE_SIZE / 2) - uiState.boardPos.left) + "px");
     }
   };
+
+  this.refreshDisplay();
 }
 
 
 $(document).ready(function() {
   var uiState = new UIGameState();
 
-  var game = new Game();
-  var processingPieceDrag = false;
-  var dragStartLoc = null;
-
-  function refreshDisplay() {
-    displayState(game.state);
-  }
-
   $("#chess-board").on("mousedown", ".chess-piece", uiState.mousedownHandler);
   $('body').on('mousemove', uiState.mousemoveHandler);
   $("#chess-board").on("mouseup", uiState.mouseupHandler);
 
-  refreshDisplay();
+  // refreshDisplay();
 });

@@ -1,17 +1,14 @@
 // Status:
 //  * Move execution is completely implemented, but not tested for moves
 //    that are not yet generated.
-//  * Moves still to be generated are double pawn moves, pawn captures,
-//    en passant, and castling.
+//  * Moves still to be generated are castles and pawn promotions.
 //  * Checking for check and testing for legal moves are not
 //    implemented.
 
-//
-// Utility
-//
-
-// An iterator is a function which will return the next thing in the iteration,
-// or null when it's done.
+function SHOW() {
+  console.log.apply(console, arguments);
+  return arguments[arguments.length - 1];
+}
 
 //
 // Types
@@ -51,23 +48,17 @@ var KING = "K";
 // A board location is an object with row and colum properties.
 //
 
-// Returns a new iterator over all the board locations.
-function allBoardLocs() {
-  var row = 0;
-  var col = 0;
+var allBoardLocs = (function() {
+  var result = [];
 
-  return function() {
-    if (col <= 7) {
-      return { row: row, col : col++ };
-    } else if (row < 7) {
-      col = 0;
-      row++;
-      return { row: row, col: col };
-    } else {
-      return null;
+  for (var row = 0; row < 8; row++) {
+    for (var col = 0; col < 8; col++) {
+      result.push({ row: row, col: col });
     }
-  };
-}
+  }
+
+  return result;
+})();
 
 // Says whether the given board location is in bounds.
 function inBounds(loc) {
@@ -161,6 +152,17 @@ function makeBoardConfig() {
   return board;
 }
 
+// Copies a board configuration.
+function copyBoardConfig(board) {
+  var newBoard = makeBoardConfig();
+
+  allBoardLocs.forEach(function(loc) {
+    newBoard.set(loc, board.get(loc));
+  });
+
+  return newBoard;
+}
+
 //
 // GameState:
 //   A game state is an object with properties:
@@ -169,6 +171,17 @@ function makeBoardConfig() {
 //       of the black and white kings. Efficiently finding the kings is
 //       useful for determining whether a player is in check.
 //     playerToMove: Player whose turn it is (i.e., their color).
+//
+
+// Copies a game state.
+function copyGameState(state) {
+  return {
+    board: copyBoardConfig(state.board),
+    kingLocs: _.cloneDeep(state.kingLocs),
+    playerToMove: state.playerToMove
+  };
+}
+
 //
 // Move:
 //   A move is an object with properties:
@@ -251,7 +264,7 @@ function makeStartingGameState() {
     pawnJustMovedDoubly: null,
     kingLocs: {
       W: { row: 0, col: 4 },
-      B: { row: 0, col: 4 }
+      B: { row: 7, col: 4 }
     },
     playerToMove: WHITE
   };
@@ -375,6 +388,10 @@ var cannotCaptureControl = simpleMovementController(
 var knightMoveControl = simpleMovementController(
   CONTINUE, CONTINUE_BUT_NO_STOP, CONTINUE);
 
+// For pieces (pawns capturing) which must capture an enemy piece.
+var mustCaptureControl = simpleMovementController(
+  CONTINUE_BUT_NO_STOP, STOP_HERE_EXCLUSIVE, STOP_HERE_INCLUSIVE);
+
 // Takes a move specified by a movement spec, a movement controller, and
 // a piece, and says whether the move is allowed by the movement controller
 // in the given game state. Disallows moves which go outside of the board.
@@ -428,7 +445,7 @@ function findMoves(state, specs, controller, piece, flag) {
 
 //
 // Semi-legality: a semi-legal move is a move which is legal except that it
-// might leave the player in check and/or capture the opponent's king.
+// might leave the player in check.
 //
 
 // Returns all semi-legal moves from the given board location for the
@@ -450,12 +467,53 @@ function semiLegalMovesFromLoc(state, loc) {
 var semiLegalMoveFunctions = {};
 
 semiLegalMoveFunctions[PAWN] = function(state, piece) {
-  // XXX: Simple test
-  return findMoves(state,
-    [[{row: 1, col: 0}], [{row: -1, col: 0}]],
-    cannotCaptureControl,
-    piece);
+  return regularPawnMoves(state, piece).concat(doublePawnMoves(state, piece)).
+    concat(pawnCaptures(state, piece)).concat(pawnEnPassants(state, piece));
 };
+
+function regularPawnMoves(state, piece) {
+  return findMoves(state,
+    [[{row: colorAdvanceDir(piece.color), col: 0}]],
+    cannotCaptureControl, piece, null);
+}
+
+function doublePawnMoves(state, piece) {
+  return !piece.hasBeenMoved ?
+    findMoves(state,
+      [_.fill(Array(2), {row: colorAdvanceDir(piece.color), col: 0})],
+      cannotCaptureControl, piece, PAWN_DOUBLE_MOVE) :
+    [];
+}
+
+function pawnCaptures(state, piece) {
+  var advanceDir = colorAdvanceDir(piece.color);
+  return findMoves(state,
+    [[{ row: advanceDir, col: 1 }], [{ row: advanceDir, col: -1 }]],
+    mustCaptureControl, piece, null);
+}
+
+function pawnEnPassants(state, piece) {
+  return pawnEnPassant(state, piece, 1).concat(pawnEnPassant(state, piece, -1));
+}
+
+function pawnEnPassant(state, piece, horizDir) {
+  var enemyLoc = locPlus(piece.loc, { row: 0, col: horizDir });
+
+  if (!inBounds(enemyLoc)) {
+    return [];
+  }
+
+  var enemy = state.board.get(enemyLoc);
+
+  if (enemy !== null && enemy.color === colorOpponent(piece.color) &&
+        enemy.rank === PAWN && enemy.justMovedDoubly) {
+    return findMoves(state,
+      [[{ row: colorAdvanceDir(piece.color), col: horizDir }]],
+      cannotCaptureControl, piece, EN_PASSANT);
+  } else {
+    return [];
+  }
+}
 
 semiLegalMoveFunctions[ROOK] = function(state, piece) {
   return findMoves(state, straightLineMoves, canCaptureControl, piece, null);
@@ -533,13 +591,88 @@ function moveIsSemiLegal(state, move) {
   return isSemiLegal;
 }
 
+// Returns all semi-legal moves in the given state.
+function semiLegalMoves(state) {
+  var result = [];
+
+  allBoardLocs.forEach(function(loc) {
+    result = result.concat(semiLegalMovesFromLoc(state, loc));
+  });
+
+  return result;
+}
+
 //
-// Legality of moves
+// Checking for check
 //
 
+// Says whether in the given state, the player to move can capture the
+// opponent's king.
+function playerToMoveCanCaptureKing(state) {
+  var moves = semiLegalMoves(state);
+
+  for (var i = 0; i < moves.length; i++) {
+    if (locEq(moves[i].newLoc, state.kingLocs[colorOpponent(state.playerToMove)])) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// Says whether in the given state, the given player is in check.
+function isInCheck(state, playerColor) {
+  var newState = _.clone(state);
+  newState.playerToMove = colorOpponent(playerColor);
+  return playerToMoveCanCaptureKing(newState);
+}
+
+// Says whether the given move puts the player moving in check.
+function movePutsPlayerInCheck(state, move) {
+  var newState = copyGameState(state);
+  executeMove(newState, move);
+  return playerToMoveCanCaptureKing(newState);
+}
+
+//
+// Checking for checkmate or stalemate
+//
+
+var GAME_NOT_OVER = "game not over";
+var STALEMATE = "stalemate";
+var CHECKMATE = "checkmate";
+
+// Returns the game status: either the game is not over, it is a stalemate, or
+// the player to move is in checkmate.
+function gameStatus(state) {
+  if (legalMoves(state).length === 0) {
+    if (isInCheck(state, state.playerToMove)) {
+      return CHECKMATE;
+    } else {
+      return STALEMATE;
+    }
+  } else {
+    return GAME_NOT_OVER;
+  }
+}
+
+//
+// Legality of moves. We say that moves which capture the opponent's king are
+// legal; they just can't in fact happen in ordinary game play.
+//
+
+function legalMovesFromLoc(state, loc) {
+  return _.filter(semiLegalMovesFromLoc(state, loc), function(move) {
+    return !movePutsPlayerInCheck(state, move);
+  });
+}
+
+function legalMoves(state) {
+  return _.flatten(allBoardLocs.map(_.curry(legalMovesFromLoc)(state)));
+}
+
 function moveIsLegal(state, move) {
-  // XXX
-  return moveIsSemiLegal(state, move);
+  return moveIsSemiLegal(state, move) && !movePutsPlayerInCheck(state, move);
 }
 
 //
@@ -562,9 +695,17 @@ function executeMove(state, move, doNotChangePlayerToMove) {
     newPiece.justMovedDoubly = false;
   }
 
+  // All pieces which didn't move this turn also didn't do a double pawn move.
+  allBoardLocs.forEach(function(loc) {
+    var piece = state.board.get(loc);
+    if (piece !== null && !locEq(loc, newPiece.loc)) {
+      piece.justMovedDoubly = false;
+    }
+  });
+
   if (move.flag === EN_PASSANT) {
     state.board.set(
-      locPlus(move.loc, { row: -colorAdvanceDir(newPiece.color), col: 0 }),
+      locPlus(move.newLoc, { row: -colorAdvanceDir(newPiece.color), col: 0 }),
       null);
   }
 
@@ -601,15 +742,30 @@ function executeMove(state, move, doNotChangePlayerToMove) {
 // Given a game state and start and end board locations, creates a move
 // from the one location to the other, applying the appropriate flags.
 // Returns null if there is no piece at the starting location or one of the
-// locations is out of bounds. Takes a callback to give the rank to promote
-// the pawn to if the move is a pawn promotion.
-function createMove(state, loc1, loc2, promotionCallback) {
+// locations is out of bounds. Takes an optional fourth argument for the
+// rank to promote a pawn to for pawn promotion.
+function createMove(state, loc1, loc2, promotionTo) {
   if (inBounds(loc1) && inBounds(loc2)) {
     var piece = state.board.get(loc1);
 
     if (piece) {
-      // XXX: add flags
-      return { piece: piece, newLoc: loc2, flag: null };
+      var flag = null;
+
+      if (piece.rank === PAWN && locEq(loc2,
+        locPlus(loc1, { row: 2 * colorAdvanceDir(piece.color), col: 0 }))) {
+        flag = PAWN_DOUBLE_MOVE;
+      } else if (piece.rank === PAWN && loc2.col !== loc1.col &&
+          state.board.get(loc2) === null) {
+        // A legal move is an en passant iff it meets the above conditions.
+        flag = EN_PASSANT;
+      } else if (piece.rank === KING && Math.abs(loc2.col - loc1.col) > 1) {
+        // A legal move is a castle iff it meets the above conditions.
+        flag = CASTLE;
+      }
+
+      // XXX: other flags
+
+      return { piece: piece, newLoc: loc2, flag: flag };
     }
   }
 
@@ -620,14 +776,24 @@ function createMove(state, loc1, loc2, promotionCallback) {
 // Game object
 //
 
+var MOVE_ILLEGAL = "move illegal";
+
 function Game() {
   this.state = makeStartingGameState();
 
   // Takes a move and, if the move is legal, performs it and updates the
-  // starting game state. It returns true if it did this, and false otherwise.
+  // starting game state. It returns one of the following status codes:
+  //   MOVE_ILLEGAL: The move was illegal and wasn't executed.
+  // The remaining status codes imply that the move was legal and was executed:
+  //   GAME_NOT_OVER
+  //   CHECKMATE: The player now to move is in checkmate.
+  //   STALEMATE: The player now to move has no legal moves, and it is a stalemate.
   this.performMove = function(move) {
-    if (moveIsSemiLegal(this.state, move)) {
+    if (moveIsLegal(this.state, move)) {
       executeMove(this.state, move);
+      return gameStatus(this.state);
+    } else {
+      return MOVE_ILLEGAL;
     }
   };
 }
