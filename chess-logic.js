@@ -1,9 +1,7 @@
 // Status:
 //  * Move execution is completely implemented, but not tested for moves
 //    that are not yet generated.
-//  * Moves still to be generated are castles and pawn promotions.
-//  * Checking for check and testing for legal moves are not
-//    implemented.
+//  * Moves still to be generated are pawn promotions.
 
 function SHOW() {
   console.log.apply(console, arguments);
@@ -188,9 +186,8 @@ function copyGameState(state) {
 //     piece
 //     newLoc
 //     flag: A movement flag, or null.
-//   And optional properties:
+//   And an optional property:
 //     promotionTo: Gives the rank to promote the pawn to, for a pawn promotion.
-//     involvedRook: The rook involved in a castle move.
 //
 //   A castle is represented by the move of the king.
 //
@@ -574,8 +571,44 @@ var kingMoveSpecs = function() {
 
 semiLegalMoveFunctions[KING] = function(state, piece) {
   // XXX: castling
-  return findMoves(state, kingMoveSpecs, canCaptureControl, piece, null);
+  return findMoves(state, kingMoveSpecs, canCaptureControl, piece, null)
+    .concat(castles(state, piece, 1))
+    .concat(castles(state, piece, -1));
 };
+
+// Returns any castle moves for the king in the given horizontal direction.
+function castles(state, piece, horizDir) {
+  var rookLoc = { row: piece.loc.row, col: horizDir === -1 ? 0 : 7 };
+  var rook = state.board.get(rookLoc);
+
+  // The second and third conditions in this conjunction imply that the
+  // piece 'rook' is in fact a friendly rook.
+  if (!piece.hasBeenMoved && rook !== null && !rook.hasBeenMoved) {
+    return findMoves(state, [_.fill(Array(2), { row: 0, col: horizDir })],
+      castleControl, piece, CASTLE);
+  } else {
+    return [];
+  }
+}
+
+// This function is mutually recursive with semiLegalMovesFromLoc. The reason
+// the recursion terminates is that this function is only called when the king
+// has not been moved, and it calls semiLegalMovesFromLoc on a state where
+// the king has been moved.
+function castleControl(state, piece, newLoc) {
+  if (state.board.get(newLoc) === null) {
+    var newState = copyGameState(state);
+    executeMove(newState, { piece: piece, newLoc: newLoc, flag: null });
+
+    if (playerToMoveCanCaptureKing(newState)) {
+      return STOP_HERE_EXCLUSIVE;
+    } else {
+      return CONTINUE;
+    }
+  } else {
+    return STOP_HERE_EXCLUSIVE;
+  }
+}
 
 // Says whether the given move is semi-legal in the given state.
 function moveIsSemiLegal(state, move) {
@@ -714,12 +747,15 @@ function executeMove(state, move, doNotChangePlayerToMove) {
   }
 
   if (move.flag === CASTLE) {
-    var moveHorizontalDelta = newPiece.loc - piece.loc;
+    var moveHorizontalDelta = newPiece.loc.col - move.piece.loc.col;
     var moveHorizontalDir = moveHorizontalDelta / Math.abs(moveHorizontalDelta);
-    var newRookLoc = { row: move.involvedRook.loc.row,
-        col: locPlus(newPiece.loc, { row: 0, col: -moveHorizontalDir }) };
+
+    var oldRookLoc = { row: move.piece.loc.row, col: moveHorizontalDir < 0 ? 0 : 7 };
+    var rook = state.board.get(oldRookLoc);
+    var newRookLoc = SHOW(locPlus(newPiece.loc, { row: 0, col: -moveHorizontalDir }));
+
     executeMove(state,
-      { piece: move.involvedRook, newLoc: newRookLoc, flag: null },
+      { piece: rook, newLoc: newRookLoc, flag: null },
       true // Do not change whose turn it is.
     );
   }
