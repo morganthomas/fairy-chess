@@ -65,67 +65,55 @@ function mouseToLoc(mouseX, mouseY) {
                                 / SQUARE_SIZE) };
 }
 
-// A UIGameState object records the state of the game UI, which includes
-// the state of the game and (currently) also data for tracking the
-// progress of piece drags.
-function UIGameState() {
-  this.game = new Game();
-  this.processingPieceDrag = false;
-  this.dragStartLoc = null;
-  this.pieceBeingDragged = null;
-  this.boardPos = $("#chess-board-origin").position();
+$(document).ready(function() {
+  var game = new Game();
+  var processingPieceDrag = false;
+  var dragStartLoc = null;
+  var pieceBeingDragged = null;
+  var boardPos = $("#chess-board-origin").position();
 
-  this.resetDragState = function() {
-    this.processingPieceDrag = false;
-    this.dragStartLoc = null;
-    this.pieceBeingDragged = null;
+  var resetDragState = function() {
+    processingPieceDrag = false;
+    dragStartLoc = null;
+    pieceBeingDragged = null;
   }
 
-  this.refreshDisplay = function() {
-    displayState(uiState.game.state);
+  var refreshDisplay = function() {
+    displayState(game.state);
   }
 
-  var uiState = this;
-
-  this.mousedownHandler = function(downEvent) {
-    uiState.dragStartLoc = mouseToLoc(downEvent.pageX, downEvent.pageY);
-    uiState.processingPieceDrag = true;
-    uiState.pieceBeingDragged = $(this);
+  var mousedownHandler = function(downEvent) {
+    dragStartLoc = mouseToLoc(downEvent.pageX, downEvent.pageY);
+    processingPieceDrag = true;
+    pieceBeingDragged = $(this);
   };
 
-  this.mouseupHandler = function(upEvent) {
-    if (uiState.processingPieceDrag) {
+  var mouseupHandler = function(upEvent) {
+    if (processingPieceDrag) {
       endLoc = mouseToLoc(upEvent.pageX, upEvent.pageY);
 
       // XXX: Provide pawn promotion callback.
-      var move = createMove(uiState.game.state, uiState.dragStartLoc, endLoc, null);
+      var move = createMove(game.state, dragStartLoc, endLoc, null);
 
       if (move) {
-        console.log(uiState.game.performMove(move));
+        console.log(game.performMove(move));
       }
 
-      uiState.refreshDisplay();
-      uiState.resetDragState();
+      refreshDisplay();
+      resetDragState();
     }
   };
 
-  this.mousemoveHandler = function(moveEvent) {
-    if (uiState.processingPieceDrag) {
-      uiState.pieceBeingDragged.css("top", (moveEvent.pageY - (SQUARE_SIZE / 2) - uiState.boardPos.top) + "px");
-      uiState.pieceBeingDragged.css("left", (moveEvent.pageX - (SQUARE_SIZE / 2) - uiState.boardPos.left) + "px");
+  var mousemoveHandler = function(moveEvent) {
+    if (processingPieceDrag) {
+      pieceBeingDragged.css("top", (moveEvent.pageY - (SQUARE_SIZE / 2) - boardPos.top) + "px");
+      pieceBeingDragged.css("left", (moveEvent.pageX - (SQUARE_SIZE / 2) - boardPos.left) + "px");
     }
   };
 
-  this.refreshDisplay();
-}
+  $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
+  $('body').on('mousemove', mousemoveHandler);
+  $("#chess-board").on("mouseup", mouseupHandler);
 
-
-$(document).ready(function() {
-  var uiState = new UIGameState();
-
-  $("#chess-board").on("mousedown", ".chess-piece", uiState.mousedownHandler);
-  $('body').on('mousemove', uiState.mousemoveHandler);
-  $("#chess-board").on("mouseup", uiState.mouseupHandler);
-
-  // refreshDisplay();
+  refreshDisplay();
 });
