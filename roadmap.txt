@@ -1,0 +1,11 @@
+Frontend stuff:
+
+ * Display when the game is over (stalemate or checkmate)
+ * Implement pawn promotion
+ * Display the score
+ * Display the record of moves
+ * Enable starting/resetting games
+ * Enable user move lookahead
+ * Enable computer move lookahead
+ * Optimize code
+ * Improve styling
