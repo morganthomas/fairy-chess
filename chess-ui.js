@@ -143,7 +143,7 @@ $(document).ready(function() {
     processingPieceDrag = true;
     pieceBeingDragged = $(this);
     $(this).addClass("piece-being-dragged");
-    updateDraggedPiecePosition(downEvent, true);
+    updateDraggedPiecePosition(downEvent, false);
   };
 
   var mouseupHandler = function(upEvent) {
