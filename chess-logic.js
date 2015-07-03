@@ -169,14 +169,21 @@ function copyBoardConfig(board) {
 //       of the black and white kings. Efficiently finding the kings is
 //       useful for determining whether a player is in check.
 //     playerToMove: Player whose turn it is (i.e., their color).
+//     status: One of GAME_NOT_OVER, CHECKMATE (for the player to move),
+//      or STALEMATE (where the player to move has no moves).
 //
+
+var GAME_NOT_OVER = "game not over";
+var STALEMATE = "stalemate";
+var CHECKMATE = "checkmate";
 
 // Copies a game state.
 function copyGameState(state) {
   return {
     board: copyBoardConfig(state.board),
     kingLocs: _.cloneDeep(state.kingLocs),
-    playerToMove: state.playerToMove
+    playerToMove: state.playerToMove,
+    status: state.status
   };
 }
 
@@ -257,8 +264,6 @@ function makeStartingBoardConfig() {
 function makeStartingGameState() {
   return {
     board: makeStartingBoardConfig(),
-    kingsAndRooksMoved: [],
-    pawnJustMovedDoubly: null,
     kingLocs: {
       W: { row: 0, col: 4 },
       B: { row: 7, col: 4 }
@@ -668,12 +673,8 @@ function movePutsPlayerInCheck(state, move) {
 }
 
 //
-// Checking for checkmate or stalemate
+// Checking game status
 //
-
-var GAME_NOT_OVER = "game not over";
-var STALEMATE = "stalemate";
-var CHECKMATE = "checkmate";
 
 // Returns the game status: either the game is not over, it is a stalemate, or
 // the player to move is in checkmate.
@@ -812,24 +813,18 @@ function createMove(state, loc1, loc2, promotionTo) {
 // Game object
 //
 
-var MOVE_ILLEGAL = "move illegal";
-
 function Game() {
   this.state = makeStartingGameState();
 
   // Takes a move and, if the move is legal, performs it and updates the
-  // starting game state. It returns one of the following status codes:
-  //   MOVE_ILLEGAL: The move was illegal and wasn't executed.
-  // The remaining status codes imply that the move was legal and was executed:
-  //   GAME_NOT_OVER
-  //   CHECKMATE: The player now to move is in checkmate.
-  //   STALEMATE: The player now to move has no legal moves, and it is a stalemate.
+  // game state. It returns true if the move was legal.
   this.performMove = function(move) {
     if (moveIsLegal(this.state, move)) {
       executeMove(this.state, move);
-      return gameStatus(this.state);
+      this.state.status = gameStatus(this.state);
+      return true;
     } else {
-      return MOVE_ILLEGAL;
+      return false;
     }
   };
 }
