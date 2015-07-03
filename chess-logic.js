@@ -46,6 +46,8 @@ var KING = "K";
 // A board location is an object with row and colum properties.
 //
 
+
+// An array of all board locations.
 var allBoardLocs = (function() {
   var result = [];
 
@@ -105,20 +107,9 @@ function makePiece(color, rank, loc) {
     justMovedDoubly: false };
 }
 
-// Duplicates a piece.
-function copyPiece(piece) {
-  newPiece = {};
-  newPiece.color = piece.color;
-  newPiece.rank = piece.rank;
-  newPiece.loc = piece.loc;
-  newPiece.hasBeenMoved = piece.hasBeenMoved;
-  newPiece.justMovedDoubly = piece.justMovedDoubly;
-  return newPiece;
-}
-
 // Returns a duplicate of the piece with a new location.
 function movedPiece(piece, newLoc) {
-  var newPiece = copyPiece(piece);
+  var newPiece = _.cloneDeep(piece);
   newPiece.loc = newLoc;
   return newPiece;
 }
@@ -130,7 +121,7 @@ function pieceEq(piece1, piece2) {
          locEq(piece1.loc, piece2.loc);
 }
 
-// Makes an empty board configuration.
+// Makes a board configuration with undefined contents.
 function makeBoardConfig() {
   var board = new Object();
 
@@ -140,25 +131,14 @@ function makeBoardConfig() {
   }
 
   board.get = function(loc) {
-    return board.array[loc.row][loc.col];
+    return this.array[loc.row][loc.col];
   };
 
   board.set = function(loc, val) {
-    board.array[loc.row][loc.col] = val;
+    this.array[loc.row][loc.col] = val;
   };
 
   return board;
-}
-
-// Copies a board configuration.
-function copyBoardConfig(board) {
-  var newBoard = makeBoardConfig();
-
-  allBoardLocs.forEach(function(loc) {
-    newBoard.set(loc, board.get(loc));
-  });
-
-  return newBoard;
 }
 
 //
@@ -176,16 +156,6 @@ function copyBoardConfig(board) {
 var GAME_NOT_OVER = "game not over";
 var STALEMATE = "stalemate";
 var CHECKMATE = "checkmate";
-
-// Copies a game state.
-function copyGameState(state) {
-  return {
-    board: copyBoardConfig(state.board),
-    kingLocs: _.cloneDeep(state.kingLocs),
-    playerToMove: state.playerToMove,
-    status: state.status
-  };
-}
 
 //
 // Move:
@@ -602,7 +572,7 @@ function castles(state, piece, horizDir) {
 // the king has been moved.
 function castleControl(state, piece, newLoc) {
   if (state.board.get(newLoc) === null) {
-    var newState = copyGameState(state);
+    var newState = _.cloneDeep(state);
     executeMove(newState, { piece: piece, newLoc: newLoc, flag: null });
 
     if (playerToMoveCanCaptureKing(newState)) {
@@ -667,7 +637,7 @@ function isInCheck(state, playerColor) {
 
 // Says whether the given move puts the player moving in check.
 function movePutsPlayerInCheck(state, move) {
-  var newState = copyGameState(state);
+  var newState = _.cloneDeep(state);
   executeMove(newState, move);
   return playerToMoveCanCaptureKing(newState);
 }
