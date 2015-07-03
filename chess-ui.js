@@ -13,6 +13,30 @@ function displayState(state) {
       displayPiece(loc, piece);
     }
   });
+
+  displayStatus(state);
+}
+
+// Displays the status of the game above the board.
+function displayStatus(state) {
+  var activeColorName = colorNames[state.playerToMove];
+
+  if (state.status === GAME_NOT_OVER) {
+    if (isInCheck(state, state.playerToMove)) {
+      // N.B.: Only the player whose move it is can be in check.
+      $("#game-status").text(_.capitalize(activeColorName) +
+        " to move; " + activeColorName + " is in check!");
+    } else {
+      $("#game-status").text(_.capitalize(activeColorName) + " to move.");
+    }
+  } else if (state.status === CHECKMATE) {
+    $("#game-status").html('<span class="major-status-change">Checkmate! ' +
+      _.capitalize(colorNames[colorOpponent(state.playerToMove)]) +
+      ' won!</span>');
+  } else if (state.status === STALEMATE) {
+    $("#game-status").html('<span class="major-status-change">Stalemate! ' +
+      _.capitalize(activeColorName) + ' has no moves.</span>');
+  }
 }
 
 // Removes all piece objects from the DOM.
@@ -59,7 +83,7 @@ function displayPiece(loc, piece) {
 // Converts mouse coordinates to a location on the chess board, assuming
 // the mouse coordinates are within the chess board.
 function mouseToLoc(mouseX, mouseY) {
-  var boardPos = $("#chess-board-origin").position();
+  var boardPos = $("#chess-board-origin").offset();
   return { row: 7 - Math.floor((mouseY - boardPos.top) / SQUARE_SIZE),
            col: Math.floor((mouseX - (boardPos.left + LEFT_BORDER_WIDTH_PX))
                                 / SQUARE_SIZE) };
@@ -70,11 +94,11 @@ $(document).ready(function() {
   var processingPieceDrag = false;
   var dragStartLoc = null;
   var pieceBeingDragged = null;
-  var boardPos = $("#chess-board-origin").position();
 
   var resetDragState = function() {
     processingPieceDrag = false;
     dragStartLoc = null;
+    pieceBeingDragged.removeClass("piece-being-dragged");
     pieceBeingDragged = null;
   }
 
@@ -86,6 +110,7 @@ $(document).ready(function() {
     dragStartLoc = mouseToLoc(downEvent.pageX, downEvent.pageY);
     processingPieceDrag = true;
     pieceBeingDragged = $(this);
+    $(this).addClass("piece-being-dragged");
   };
 
   var mouseupHandler = function(upEvent) {
@@ -105,6 +130,8 @@ $(document).ready(function() {
   };
 
   var mousemoveHandler = function(moveEvent) {
+      var boardPos = $("#chess-board-origin").offset();
+
     if (processingPieceDrag) {
       pieceBeingDragged.css("top", (moveEvent.pageY - (SQUARE_SIZE / 2) - boardPos.top) + "px");
       pieceBeingDragged.css("left", (moveEvent.pageX - (SQUARE_SIZE / 2) - boardPos.left) + "px");

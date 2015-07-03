@@ -32,6 +32,13 @@ function colorAdvanceDir(color) {
   }
 }
 
+var colorNames = (function() {
+  var colorNames = {};
+  colorNames[WHITE] = "white";
+  colorNames[BLACK] = "black";
+  return colorNames;
+})();
+
 // Ranks
 var PAWN = "P";
 var ROOK = "R";
@@ -45,7 +52,6 @@ var KING = "K";
 //
 // A board location is an object with row and colum properties.
 //
-
 
 // An array of all board locations.
 var allBoardLocs = (function() {
@@ -238,7 +244,8 @@ function makeStartingGameState() {
       W: { row: 0, col: 4 },
       B: { row: 7, col: 4 }
     },
-    playerToMove: WHITE
+    playerToMove: WHITE,
+    status: GAME_NOT_OVER
   };
 }
 
