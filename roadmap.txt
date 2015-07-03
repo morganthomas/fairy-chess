@@ -1,16 +1,17 @@
 Frontend stuff:
 
- * Constants
- * Function names are verbs
- * ==
- * Don't need new Object(), new Array()
- * Enums: put in objects?
- * Global vars at top of file?
- * Use array combinators
- * Use OO
+ [ ] Refactoring:
+  * Named constants
+  * Function names are verbs
+  * ==
+  * Don't need new Object(), new Array()
+  * Enums: put in objects?
+  * Global vars at top of file?
+  * Use array combinators
+  * Use OO
 
- [ ] Display whose move it is, and who is in check.
- [ ] Display when the game is over (stalemate or checkmate)
+ [x] Display whose move it is, and who is in check.
+ [x] Display when the game is over (stalemate or checkmate)
  [ ] Implement pawn promotion
  [ ] Display the score
  [ ] Display the record of moves

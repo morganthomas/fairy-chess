@@ -100,10 +100,42 @@ $(document).ready(function() {
     dragStartLoc = null;
     pieceBeingDragged.removeClass("piece-being-dragged");
     pieceBeingDragged = null;
-  }
+  };
 
   var refreshDisplay = function() {
     displayState(game.state);
+  };
+
+  // Returns the CSS for the position of a piece being dragged, given the
+  // event containing the mouse coordinates.
+  var getDraggedPiecePosition = function(event) {
+    var boardPos = $("#chess-board-origin").offset();
+
+    return {
+      top: (event.pageY - (SQUARE_SIZE / 2) - boardPos.top) + "px",
+      left: (event.pageX - (SQUARE_SIZE / 2) - boardPos.left) + "px"
+    };
+  };
+
+  // Updates the position of the piece being dragged, given the event containing the
+  // mouse coordinates. If smooth is true, animates the position change.
+  var updateDraggedPiecePosition = function(event, smooth) {
+    var DRAG_ANIMATION_RATE_MS_PER_PX = 5;
+
+    var newPos = getDraggedPiecePosition(event);
+
+    if (smooth) {
+      var oldPos = { top: pieceBeingDragged.css("top"),
+                     left: pieceBeingDragged.css("left") };
+      var distance = Math.sqrt(
+        Math.pow(parseInt(oldPos.left) - parseInt(newPos.left), 2) +
+        Math.pow(parseInt(oldPos.top) - parseInt(newPos.top), 2));
+      var animationTime = distance * DRAG_ANIMATION_RATE_MS_PER_PX;
+
+      pieceBeingDragged.animate(newPos, animationTime);
+    } else {
+      pieceBeingDragged.css(newPos);
+    }
   }
 
   var mousedownHandler = function(downEvent) {
@@ -111,6 +143,7 @@ $(document).ready(function() {
     processingPieceDrag = true;
     pieceBeingDragged = $(this);
     $(this).addClass("piece-being-dragged");
+    updateDraggedPiecePosition(downEvent, true);
   };
 
   var mouseupHandler = function(upEvent) {
@@ -130,11 +163,8 @@ $(document).ready(function() {
   };
 
   var mousemoveHandler = function(moveEvent) {
-      var boardPos = $("#chess-board-origin").offset();
-
     if (processingPieceDrag) {
-      pieceBeingDragged.css("top", (moveEvent.pageY - (SQUARE_SIZE / 2) - boardPos.top) + "px");
-      pieceBeingDragged.css("left", (moveEvent.pageX - (SQUARE_SIZE / 2) - boardPos.left) + "px");
+      updateDraggedPiecePosition(moveEvent, false);
     }
   };
 
