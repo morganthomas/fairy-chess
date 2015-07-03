@@ -20,3 +20,4 @@ Frontend stuff:
  [ ] Enable computer move lookahead
  [ ] Optimize code
  [ ] Improve styling
+ [ ] Write test suite
