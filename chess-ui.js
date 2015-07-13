@@ -4,7 +4,9 @@
 var LEFT_BORDER_WIDTH_PX = 1;
 
 // Displays a given game state.
-function displayState(state) {
+function displayState(game) {
+  var state = game.stateLog[game.stateBeingViewedIndex];
+
   hideAllPieces(state);
 
   allBoardLocs.forEach(function(loc) {
@@ -16,6 +18,7 @@ function displayState(state) {
 
   displayStatus(state);
   displayCapturedPieces(state);
+  displayMoveLog(game);
 }
 
 // Displays the captured pieces.
@@ -39,6 +42,39 @@ function displayCapturedPieces(state) {
   });
 }
 
+// Displays the move log.
+function displayMoveLog(game) {
+  var $tbody = $('#move-record-table tbody');
+  $tbody.empty();
+
+  for (var i = 0; i * 2 < game.moveLog.length; i++) {
+    var $tr = $('<tr></tr>');
+
+    var $num = $('<td></td>');
+    $num.text(i+1);
+    $tr.append($num);
+
+    function makeMoveCell(j) {
+      var $elt = $('<td></td>');
+
+      if (j < game.moveLog.length) {
+        $elt.text(game.moveAlgebraicNotations[j]);
+      }
+
+      if (j + 1 === game.stateBeingViewedIndex) {
+        $elt.addClass('move-being-viewed');
+      }
+
+      $tr.append($elt);
+    }
+
+    makeMoveCell(i*2); // White move
+    makeMoveCell(i*2 + 1); // Black move
+
+    $tbody.append($tr);
+  }
+}
+
 // Displays the status of the game (white to move, checkmate, etc.)
 function displayStatus(state) {
   var activeColorName = colorNames[state.playerToMove];
@@ -51,7 +87,7 @@ function displayStatus(state) {
       alertClass = "alert-warning";
     } else {
       $("#game-status").text(_.capitalize(activeColorName) + " to move.");
-      alertClass = "alert-hidden";
+      alertClass = "alert-info";
     }
   } else if (state.status === CHECKMATE) {
     $("#game-status").html('Checkmate! ' +
@@ -65,7 +101,7 @@ function displayStatus(state) {
   }
 
   // Set appropriate CSS classes.
-  $("#game-status").removeClass('alert-hidden');
+  $("#game-status").removeClass('alert-info');
   $("#game-status").removeClass('alert-warning');
   $("#game-status").removeClass('alert-danger');
   $("#game-status").addClass(alertClass);
@@ -140,7 +176,7 @@ $(document).ready(function() {
   };
 
   var refreshDisplay = function() {
-    displayState(game.stateLog[game.stateBeingViewedIndex]);
+    displayState(game);
   };
 
   // Returns the CSS for the position of a piece being dragged, given the

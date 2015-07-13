@@ -936,12 +936,16 @@ function Game() {
   // state n+1.
   this.moveLog = [];
 
+  // A log (for performance) of the algebraic notation of each move.
+  this.moveAlgebraicNotations = [];
+
   // Updates the state to the new given state, which was produced by
   // the given move. Assumes the current state is the state being
   // viewed.
   this.updateState = function(newState, move) {
     this.stateLog.push(newState);
     this.moveLog.push(move);
+    this.moveAlgebraicNotations.push(displayMoveAlgebraic(this.state, move));
     this.currentStateIndex++;
     this.stateBeingViewedIndex++;
     this.state = newState;
@@ -953,7 +957,7 @@ function Game() {
   this.performMove = function(move) {
     if (this.currentStateIndex === this.stateBeingViewedIndex &&
         moveIsLegal(this.state, move)) {
-      console.log(displayMoveAlgebraic(this.state, move));
+      // console.log(displayMoveAlgebraic(this.state, move));
 
       var newState = _.cloneDeep(this.state);
       executeMove(newState, move);

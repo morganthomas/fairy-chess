@@ -57,6 +57,25 @@ body {
 
 #move-record .panel-body {
   height: 300px;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+}
+
+#move-record-table {
+}
+
+#move-record-table thead th {
+  text-align: center;
+}
+
+.move-being-viewed {
+  background-color: lightgrey;
+}
+
+.player-indicator {
+  width: 16px;
+  height: 16px;
 }
 
 #chess-board {
