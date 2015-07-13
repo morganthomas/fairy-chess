@@ -47,6 +47,16 @@ function displayMoveLog(game) {
   var $tbody = $('#move-record-table tbody');
   $tbody.empty();
 
+  var $startTr = $('<tr></tr>');
+  var $startTd = $('<td colspan="3"></td>');
+  $startTd.text("⟨start⟩");
+  $startTr.append($startTd);
+  $tbody.append($startTr);
+
+  if (game.stateBeingViewedIndex === 0) {
+    $startTd.addClass('move-being-viewed');
+  }
+
   for (var i = 0; i * 2 < game.moveLog.length; i++) {
     var $tr = $('<tr></tr>');
 
@@ -260,11 +270,23 @@ $(document).ready(function() {
     }
   }
 
+  var viewStart = function() {
+    game.stateBeingViewedIndex = 0;
+    refreshDisplay();
+  }
+
+  var viewEnd = function() {
+    game.stateBeingViewedIndex = game.stateLog.length - 1;
+    refreshDisplay();
+  }
+
   $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
   $('body').on('mousemove', mousemoveHandler);
   $("#chess-board").on("mouseup", mouseupHandler);
   $("#step-backward-button").on("click", decrementViewedState);
   $("#step-forward-button").on("click", incrementViewedState);
+  $("#to-start-button").on("click", viewStart);
+  $("#to-end-button").on("click", viewEnd);
 
   refreshDisplay();
 });

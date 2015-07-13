@@ -14,6 +14,7 @@ Frontend stuff:
  [x] Display when the game is over (stalemate or checkmate)
  [x] Display the captured pieces
  [x] Display the record of moves
+ [x] Add move to start and move to end buttons
  [ ] Enable user move lookahead
  [ ] Enable computer move lookahead
  [ ] Implement pawn promotion UI
