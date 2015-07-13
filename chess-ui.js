@@ -150,11 +150,16 @@ $(document).ready(function() {
     if (processingPieceDrag) {
       endLoc = mouseToLoc(upEvent.pageX, upEvent.pageY);
 
-      // XXX: Provide pawn promotion callback.
       var move = createMove(game.state, dragStartLoc, endLoc, null);
 
+      if (move && couldPromotePawn(move)) {
+        // XXX: Stub interface.
+        var newRank = prompt("What rank do you want to promote your pawn to?");
+        move = createMove(game.state, dragStartLoc, endLoc, newRank);
+      }
+
       if (move) {
-        console.log(game.performMove(move));
+        game.performMove(move);
       }
 
       refreshDisplay();

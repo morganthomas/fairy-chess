@@ -47,6 +47,8 @@ var BISHOP = "B";
 var QUEEN = "Q";
 var KING = "K";
 
+var RANKS = [PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING];
+
 //
 // Board Locations
 //
@@ -447,7 +449,8 @@ var semiLegalMoveFunctions = {};
 
 semiLegalMoveFunctions[PAWN] = function(state, piece) {
   return regularPawnMoves(state, piece).concat(doublePawnMoves(state, piece)).
-    concat(pawnCaptures(state, piece)).concat(pawnEnPassants(state, piece));
+    concat(pawnCaptures(state, piece)).concat(pawnEnPassants(state, piece)).
+    concat(pawnPromotions(state, piece));
 };
 
 function regularPawnMoves(state, piece) {
@@ -492,6 +495,25 @@ function pawnEnPassant(state, piece, horizDir) {
   } else {
     return [];
   }
+}
+
+function pawnPromotions(state, piece) {
+  var forwardMoves = findMoves(state,
+    [[{row: colorAdvanceDir(piece.color), col: 0}]],
+    cannotCaptureControl, piece, PAWN_PROMOTION);
+  var moves = [];
+
+  if (piece.loc.row === (piece.color === BLACK ? 1 : 6)) {
+    forwardMoves.forEach(function(move) {
+      RANKS.forEach(function(rank) {
+        var newMove = _.cloneDeep(move);
+        newMove.promotionTo = rank;
+        moves.push(newMove);
+      });
+    });
+  }
+
+  return moves;
 }
 
 semiLegalMoveFunctions[ROOK] = function(state, piece) {
@@ -753,6 +775,13 @@ function executeMove(state, move, doNotChangePlayerToMove) {
 // Move construction
 //
 
+// Returns true if the given move is a move of a pawn onto the opponent's
+// first row.
+function couldPromotePawn(move) {
+  return move.newLoc.row === (move.piece.color === BLACK ? 0 : 7) &&
+    move.piece.rank === PAWN;
+}
+
 // Given a game state and start and end board locations, creates a move
 // from the one location to the other, applying the appropriate flags.
 // Returns null if there is no piece at the starting location or one of the
@@ -775,11 +804,13 @@ function createMove(state, loc1, loc2, promotionTo) {
       } else if (piece.rank === KING && Math.abs(loc2.col - loc1.col) > 1) {
         // A legal move is a castle iff it meets the above conditions.
         flag = CASTLE;
+      } else if (promotionTo) {
+        flag = PAWN_PROMOTION;
       }
 
       // XXX: other flags
 
-      return { piece: piece, newLoc: loc2, flag: flag };
+      return { piece: piece, newLoc: loc2, flag: flag, promotionTo: promotionTo };
     }
   }
 
