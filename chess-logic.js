@@ -8,6 +8,12 @@ function SHOW() {
   return arguments[arguments.length - 1];
 }
 
+function all(bools) {
+  return bools.reduce(function(a,b) {
+    return a && b;
+  }, true);
+}
+
 //
 // Types
 //
@@ -48,6 +54,16 @@ var QUEEN = "Q";
 var KING = "K";
 
 var RANKS = [PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING];
+
+// Gives the point value of a given rank.
+var RANK_POINT_VALUES = {
+  P: 1,
+  R: 5,
+  N: 3,
+  B: 3,
+  Q: 5,
+  K: undefined
+};
 
 //
 // Board Locations
@@ -159,6 +175,7 @@ function makeBoardConfig() {
 //     playerToMove: Player whose turn it is (i.e., their color).
 //     status: One of GAME_NOT_OVER, CHECKMATE (for the player to move),
 //      or STALEMATE (where the player to move has no moves).
+//     capturedPieces: An array of all captured pieces.
 //
 
 var GAME_NOT_OVER = "game not over";
@@ -247,7 +264,8 @@ function makeStartingGameState() {
       B: { row: 7, col: 4 }
     },
     playerToMove: WHITE,
-    status: GAME_NOT_OVER
+    status: GAME_NOT_OVER,
+    capturedPieces: []
   };
 }
 
@@ -715,8 +733,11 @@ function moveIsLegal(state, move) {
 // Takes a state and a move, which is assumed to be legal. Updates the
 // state in place to reflect the result of making the move.
 // Does not change the active player if doNotChangePlayerToMove is true.
+// Returns any captured piece, or null if no piece was captured.
+// Does not update the game status. (Should it?)
 function executeMove(state, move, doNotChangePlayerToMove) {
   state.board.set(move.piece.loc, null);
+  var capturedPiece = state.board.get(move.newLoc);
   var newPiece = movedPiece(move.piece, move.newLoc);
   state.board.set(move.newLoc, newPiece);
 
@@ -737,9 +758,10 @@ function executeMove(state, move, doNotChangePlayerToMove) {
   });
 
   if (move.flag === EN_PASSANT) {
-    state.board.set(
-      locPlus(move.newLoc, { row: -colorAdvanceDir(newPiece.color), col: 0 }),
-      null);
+    var enemyLoc = locPlus(move.newLoc,
+      { row: -colorAdvanceDir(newPiece.color), col: 0 });
+    capturedPiece = state.board.get(enemyLoc);
+    state.board.set(enemyLoc, null);
   }
 
   if (move.flag === PAWN_PROMOTION) {
@@ -752,7 +774,7 @@ function executeMove(state, move, doNotChangePlayerToMove) {
 
     var oldRookLoc = { row: move.piece.loc.row, col: moveHorizontalDir < 0 ? 0 : 7 };
     var rook = state.board.get(oldRookLoc);
-    var newRookLoc = SHOW(locPlus(newPiece.loc, { row: 0, col: -moveHorizontalDir }));
+    var newRookLoc = locPlus(newPiece.loc, { row: 0, col: -moveHorizontalDir });
 
     executeMove(state,
       { piece: rook, newLoc: newRookLoc, flag: null },
@@ -768,6 +790,10 @@ function executeMove(state, move, doNotChangePlayerToMove) {
 
   if (!doNotChangePlayerToMove) {
     state.playerToMove = colorOpponent(state.playerToMove);
+  }
+
+  if (capturedPiece) {
+    state.capturedPieces.push(capturedPiece);
   }
 }
 
@@ -818,18 +844,124 @@ function createMove(state, loc1, loc2, promotionTo) {
 }
 
 //
+// Algebraic chess notation
+//
+
+function displayRowAlgebraic(rowNum) {
+  return (rowNum + 1).toString();
+}
+
+function displayColAlgebraic(colNum) {
+  var COL_NAMES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+  return COL_NAMES[colNum];
+}
+
+function displayLocAlgebraic(loc) {
+  return displayColAlgebraic(loc.col) + displayRowAlgebraic(loc.row);
+}
+
+function displayRankAlgebraic(rank) {
+  return rank === PAWN ? '' : rank;
+}
+
+// Returns the algebraic notation for the given move from the given
+// state.
+function displayMoveAlgebraic(state, move) {
+  if (move.flag === CASTLE) {
+    if (move.newLoc.col < move.piece.loc.col) {
+      // Queenside castle
+      return '0-0-0';
+    } else {
+      // Kingside castle
+      return '0-0';
+    }
+  }
+
+  // The moves which have the same destination as this move and the
+  // same rank of piece.
+  var ambiguousMoves = legalMoves(state).filter(function(otherMove) {
+    return locEq(move.newLoc, otherMove.newLoc) &&
+      move.piece.rank === otherMove.piece.rank &&
+      !moveEq(move, otherMove);
+  });
+
+  var disambiguationString;
+
+  if (ambiguousMoves.length > 0) {
+    if (all(ambiguousMoves.map(function(otherMove) {
+          return otherMove.piece.loc.col !== move.piece.loc.col;
+        }))) {
+      disambiguationString = displayColAlgebraic(move.piece.loc.col);
+    } else if (all(ambiguousMoves.map(function(otherMove) {
+          return otherMove.piece.loc.row !== move.piece.loc.row;
+        }))) {
+      disambiguationString = displayRowAlgebraic(move.piece.loc.row);
+    } else {
+      disambiguationString = displayLocAlgebraic(move.piece.loc);
+    }
+  } else {
+    disambiguationString = '';
+  }
+
+  // XXX: capture notation?
+
+  var pawnPromotionString;
+
+  if (move.flag === PAWN_PROMOTION) {
+    pawnPromotionString = '/' + displayRankAlgebraic(move.promotionTo);
+  } else {
+    pawnPromotionString = '';
+  }
+
+  return displayRankAlgebraic(move.piece.rank) +
+    disambiguationString +
+    displayLocAlgebraic(move.newLoc) +
+    pawnPromotionString;
+}
+
+//
 // Game object
 //
 
 function Game() {
   this.state = makeStartingGameState();
 
+  // A log of all the game states that have occurred, including the
+  // current one.
+  this.stateLog = [this.state];
+  this.currentStateIndex = 0;
+  this.stateBeingViewedIndex = 0;
+
+  // A log of all the moves that have occurred. Move n resulted in
+  // state n+1.
+  this.moveLog = [];
+
+  // Updates the state to the new given state, which was produced by
+  // the given move. Assumes the current state is the state being
+  // viewed.
+  this.updateState = function(newState, move) {
+    this.stateLog.push(newState);
+    this.moveLog.push(move);
+    this.currentStateIndex++;
+    this.stateBeingViewedIndex++;
+    this.state = newState;
+  };
+
   // Takes a move and, if the move is legal, performs it and updates the
-  // game state. It returns true if the move was legal.
+  // game state. It returns true if the move was legal. Also, only
+  // operative if the current state is being viewed.
   this.performMove = function(move) {
-    if (moveIsLegal(this.state, move)) {
-      executeMove(this.state, move);
-      this.state.status = gameStatus(this.state);
+    if (this.currentStateIndex === this.stateBeingViewedIndex &&
+        moveIsLegal(this.state, move)) {
+      console.log(displayMoveAlgebraic(this.state, move));
+
+      var newState = _.cloneDeep(this.state);
+      executeMove(newState, move);
+      newState.status = gameStatus(newState);
+      this.updateState(newState, move);
+
+      // console.log(this);
+
       return true;
     } else {
       return false;

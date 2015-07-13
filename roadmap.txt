@@ -12,12 +12,14 @@ Frontend stuff:
 
  [x] Display whose move it is, and who is in check.
  [x] Display when the game is over (stalemate or checkmate)
- [ ] Implement pawn promotion
- [ ] Display the score
+ [x] Display the captured pieces
+ [ ] Add player names
  [ ] Display the record of moves
- [ ] Enable starting/resetting games
  [ ] Enable user move lookahead
  [ ] Enable computer move lookahead
+ [ ] Implement pawn promotion UI
+ [ ] Enable starting/resetting games
  [ ] Optimize code
  [ ] Improve styling
  [ ] Write test suite
+ [ ] Sort captured pieces

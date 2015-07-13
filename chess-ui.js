@@ -15,28 +15,60 @@ function displayState(state) {
   });
 
   displayStatus(state);
+  displayCapturedPieces(state);
 }
 
-// Displays the status of the game above the board.
+// Displays the captured pieces.
+function displayCapturedPieces(state) {
+  // XXX: Sort
+  $("#captured-pieces").empty();
+
+  [WHITE,BLACK].forEach(function(color) {
+    var capturedPieces = state.capturedPieces.filter(function(piece) {
+      return piece.color === color;
+    });
+
+    var $div = $('<div></div>');
+    $('#captured-pieces').append($div);
+
+    capturedPieces.forEach(function(piece) {
+      var $piece = makePieceImage(piece);
+      $piece.addClass('captured-piece');
+      $div.append($piece);
+    })
+  });
+}
+
+// Displays the status of the game (white to move, checkmate, etc.)
 function displayStatus(state) {
   var activeColorName = colorNames[state.playerToMove];
+  var alertClass;
 
   if (state.status === GAME_NOT_OVER) {
     if (isInCheck(state, state.playerToMove)) {
       // N.B.: Only the player whose move it is can be in check.
-      $("#game-status").text(_.capitalize(activeColorName) +
-        " to move; " + activeColorName + " is in check!");
+      $("#game-status").text(_.capitalize(activeColorName) + " is in check!");
+      alertClass = "alert-warning";
     } else {
       $("#game-status").text(_.capitalize(activeColorName) + " to move.");
+      alertClass = "alert-hidden";
     }
   } else if (state.status === CHECKMATE) {
-    $("#game-status").html('<span class="major-status-change">Checkmate! ' +
+    $("#game-status").html('Checkmate! ' +
       _.capitalize(colorNames[colorOpponent(state.playerToMove)]) +
-      ' won!</span>');
+      ' won!');
+    alertClass = 'alert-danger';
   } else if (state.status === STALEMATE) {
-    $("#game-status").html('<span class="major-status-change">Stalemate! ' +
-      _.capitalize(activeColorName) + ' has no moves.</span>');
+    $("#game-status").html('Stalemate! ' +
+      _.capitalize(activeColorName) + ' has no moves.');
+    alertClass = 'alert-danger';
   }
+
+  // Set appropriate CSS classes.
+  $("#game-status").removeClass('alert-hidden');
+  $("#game-status").removeClass('alert-warning');
+  $("#game-status").removeClass('alert-danger');
+  $("#game-status").addClass(alertClass);
 }
 
 // Removes all piece objects from the DOM.
@@ -65,19 +97,24 @@ function pieceImageName(piece) {
     prettyRankNames[piece.rank] + ".png";
 }
 
+function makePieceImage(piece) {
+  var $piece = $('<div><img src="' + pieceImageName(piece) + '"></div>');
+  return $piece;
+}
+
 // Creates a DOM object displaying the given piece.
 function displayPiece(loc, piece) {
-  var pieceJ = $('<div class="chess-piece"><img src="' +
-    pieceImageName(piece) + '"></div>');
-  pieceJ.css("top", (7 - loc.row) * SQUARE_SIZE + "px");
-  pieceJ.css("left", (loc.col * SQUARE_SIZE - LEFT_BORDER_WIDTH_PX)
+  var $piece = makePieceImage(piece);
+  $piece.addClass('chess-piece');
+  $piece.css("top", (7 - loc.row) * SQUARE_SIZE + "px");
+  $piece.css("left", (loc.col * SQUARE_SIZE - LEFT_BORDER_WIDTH_PX)
     + "px");
   // Necessary to prevent the browser from interpreting the user as
   // attempting an image drag when they drag a piece.
-  pieceJ.on('dragstart', function(event) {
+  $piece.on('dragstart', function(event) {
     event.preventDefault();
   });
-  $("#chess-board-origin").append(pieceJ);
+  $("#chess-board-origin").append($piece);
 }
 
 // Converts mouse coordinates to a location on the chess board, assuming
@@ -103,7 +140,7 @@ $(document).ready(function() {
   };
 
   var refreshDisplay = function() {
-    displayState(game.state);
+    displayState(game.stateLog[game.stateBeingViewedIndex]);
   };
 
   // Returns the CSS for the position of a piece being dragged, given the
@@ -173,9 +210,25 @@ $(document).ready(function() {
     }
   };
 
+  var incrementViewedState = function() {
+    if (game.stateBeingViewedIndex < game.currentStateIndex) {
+      game.stateBeingViewedIndex++;
+      refreshDisplay();
+    }
+  }
+
+  var decrementViewedState = function() {
+    if (game.stateBeingViewedIndex > 0) {
+      game.stateBeingViewedIndex--;
+      refreshDisplay();
+    }
+  }
+
   $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
   $('body').on('mousemove', mousemoveHandler);
   $("#chess-board").on("mouseup", mouseupHandler);
+  $("#step-backward-button").on("click", decrementViewedState);
+  $("#step-forward-button").on("click", incrementViewedState);
 
   refreshDisplay();
 });

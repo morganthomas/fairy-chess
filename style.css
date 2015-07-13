@@ -1,3 +1,16 @@
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.noselect:hover {
+  cursor: default;
+}
+
 body {
   background-color: lightgrey;
   padding: 0;
@@ -5,9 +18,9 @@ body {
 
 .page {
   background-color: white;
-  width: 600px;
   padding: 50px;
-  margin: auto;
+  text-align: center;
+  line-height: 100%;
 }
 
 .main-header {
@@ -16,9 +29,39 @@ body {
   font-family: sans-serif;
 }
 
+#chess-dashboard {
+  /*display: inline-block;*/
+  /*float: right;*/
+  /*width: 300px;*/
+  padding: 0;
+  margin-top: 1em;
+}
+
+.chess-dashboard-subpanel {
+  margin: 20px;
+}
+
+#captured-pieces {
+  min-height: 70px;
+  text-align: left;
+}
+
+.captured-piece {
+  display: inline-block;
+}
+
+.captured-piece img {
+  width: 32px;
+  height: 32px;
+}
+
+#move-record .panel-body {
+  height: 300px;
+}
+
 #chess-board {
-  width: 562px; /* 25 + 8*64 + 25 */
   margin: auto;
+  width: 562px; /* 25 + 8*64 + 25 */
 }
 
 #chess-board table {
@@ -40,19 +83,19 @@ body {
 /* Change LEFT_BORDER_WIDTH_PX in chess-ui.js if you change the width
     of this border. */
 .col-0 {
-  border-left: 1px solid grey;
+  border-left: 1px solid #A3B2BF;
 }
 
 .col-7 {
-  border-right: 1px solid grey;
+  border-right: 1px solid #A3B2BF;
 }
 
 #row-7 .chess-square {
-  border-top: 1px solid grey;
+  border-top: 1px solid #A3B2BF;
 }
 
 #row-0 .chess-square {
-  border-bottom: 1px solid grey;
+  border-bottom: 1px solid #A3B2BF;
 }
 
 .chess-row {
@@ -61,7 +104,8 @@ body {
 }
 
 .black-square {
-  background-color: grey;
+  background-color: #A3B2BF;
+  /*background-color: grey;*/
 }
 
 .white-square {
@@ -93,6 +137,10 @@ body {
   text-align: center;
   margin-bottom: 10px;
   font-family: sans-serif;
+}
+
+.alert-hidden {
+  visibility: hidden;
 }
 
 .major-status-change {
