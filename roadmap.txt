@@ -22,5 +22,6 @@ Frontend stuff:
  [ ] Sort captured pieces
  [ ] Optimize code
  [ ] Improve styling
- [ ] Find better chess icons
+ [x] Find better chess icons
+ [ ] Add opening database
  [ ] Write test suite
