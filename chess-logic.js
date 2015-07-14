@@ -945,14 +945,23 @@ function Game() {
     return this.stateLog[this.stateBeingViewedIndex];
   }
 
+  // Removes states after the given index.
+  this.truncateStateLog = function(index) {
+    this.stateLog = this.stateLog.slice(0, index + 1);
+    this.moveLog = this.moveLog.slice(0, index);
+    this.moveAlgebraicNotations = this.moveAlgebraicNotations.slice(0, index);
+  }
+
   // Updates the state to the new given state, which was produced by
-  // the given move. Assumes the state being viewed is the last state
-  // in the log.
+  // the given move. Assumes the state being viewed is no earlier than the
+  // current state. Removes any states after the one being viewed.
   this.updateState = function(newState, move) {
-    if (this.stateBeingViewedIndex === this.stateLog.length - 1) {
+    if (this.stateBeingViewedIndex >= this.currentStateIndex) {
+      this.truncateStateLog(this.stateBeingViewedIndex);
       this.stateLog.push(newState);
       this.moveLog.push(move);
-      this.moveAlgebraicNotations.push(displayMoveAlgebraic(this.state, move));
+      this.moveAlgebraicNotations.push(
+        displayMoveAlgebraic(this.getStateBeingViewed(), move));
 
       if (!this.planningMode) {
         this.currentStateIndex++;
@@ -969,9 +978,7 @@ function Game() {
 
   this.exitPlanningMode = function() {
     this.planningMode = false;
-    this.stateLog = this.stateLog.slice(0, this.currentStateIndex + 1);
-    this.moveLog = this.moveLog.slice(0, this.currentStateIndex);
-    this.moveAlgebraicNotations = this.moveAlgebraicNotations.slice(0, this.currentStateIndex);
+    this.truncateStateLog(this.currentStateIndex);
     this.stateBeingViewedIndex = Math.min(this.stateBeingViewedIndex, this.currentStateIndex);
   }
 
@@ -985,11 +992,12 @@ function Game() {
 
   // Takes a move and, if the move is legal, performs it and updates the
   // game state. It returns true if the move was legal. Also, only
-  // operative if the current state is being viewed.
+  // operative if the state being viewed is no earlier than the current state.
+  // Overwrites any states after the one being viewed.
   this.performMove = function(move) {
     var state = this.getStateBeingViewed();
 
-    if (this.stateBeingViewedIndex === this.stateLog.length - 1 &&
+    if (this.stateBeingViewedIndex >= this.currentStateIndex &&
         moveIsLegal(state, move)) {
       // console.log(displayMoveAlgebraic(this.state, move));
 

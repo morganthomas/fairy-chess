@@ -39,7 +39,7 @@ function displayCapturedPieces(state) {
       var $piece = makePieceImage(piece);
       $piece.addClass('captured-piece');
       $div.append($piece);
-    })
+    });
   });
 }
 
@@ -129,7 +129,12 @@ function displayStatus(state) {
 function displayPlanningControls(game) {
   if (game.planningMode) {
     $('#planning-mode-toggle-button').text('Exit Planning Mode');
-    $('#commit-move-div').show();
+
+    if (game.stateLog.length > game.currentStateIndex + 1) {
+      $('#commit-move-div').show();
+    } else {
+      $('#commit-move-div').hide();
+    }
   } else {
     $('#planning-mode-toggle-button').text('Enter Planning Mode');
     $('#commit-move-div').hide();
@@ -272,7 +277,7 @@ $(document).ready(function() {
   };
 
   var incrementViewedState = function() {
-    if (game.stateBeingViewedIndex < game.moveLog.length) {
+    if (game.stateBeingViewedIndex < game.stateLog.length - 1) {
       game.stateBeingViewedIndex++;
       refreshDisplay();
     }
