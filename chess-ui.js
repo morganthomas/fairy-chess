@@ -50,6 +50,8 @@ function displayMoveLog(game) {
   var $startTr = $('<tr></tr>');
   var $startTd = $('<td colspan="3"></td>');
   $startTd.text("⟨start⟩");
+  $startTd.addClass('move-log-cell');
+  $startTd.data('index', 0);
   $startTr.append($startTd);
   $tbody.append($startTr);
 
@@ -66,6 +68,8 @@ function displayMoveLog(game) {
 
     function makeMoveCell(j) {
       var $elt = $('<td></td>');
+      $elt.data('index', j+1);
+      $elt.addClass('move-log-cell');
 
       if (j < game.moveLog.length) {
         $elt.text(game.moveAlgebraicNotations[j]);
@@ -261,24 +265,29 @@ $(document).ready(function() {
       game.stateBeingViewedIndex++;
       refreshDisplay();
     }
-  }
+  };
 
   var decrementViewedState = function() {
     if (game.stateBeingViewedIndex > 0) {
       game.stateBeingViewedIndex--;
       refreshDisplay();
     }
-  }
+  };
 
   var viewStart = function() {
     game.stateBeingViewedIndex = 0;
     refreshDisplay();
-  }
+  };
 
   var viewEnd = function() {
     game.stateBeingViewedIndex = game.stateLog.length - 1;
     refreshDisplay();
-  }
+  };
+
+  var clickMoveLogCellHandler = function() {
+    game.stateBeingViewedIndex = $(this).data('index');
+    refreshDisplay();
+  };
 
   $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
   $('body').on('mousemove', mousemoveHandler);
@@ -287,6 +296,7 @@ $(document).ready(function() {
   $("#step-forward-button").on("click", incrementViewedState);
   $("#to-start-button").on("click", viewStart);
   $("#to-end-button").on("click", viewEnd);
+  $("#move-record-table").on('click', '.move-log-cell', clickMoveLogCellHandler);
 
   refreshDisplay();
 });
