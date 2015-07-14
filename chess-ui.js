@@ -338,5 +338,10 @@ $(document).ready(function() {
   $('#planning-mode-toggle-button').on('click', togglePlanningMode);
   $('#commit-move-button').on('click', commitFirstMove);
 
+  // XXX: testing
+  $('h1').on('click', function() {
+    console.log(bestScoreLead(game.getStateBeingViewed(), WHITE, 3));
+  });
+
   refreshDisplay();
 });

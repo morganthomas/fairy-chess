@@ -9,6 +9,18 @@ function all(bools) {
   }, true);
 }
 
+// All arguments are assumed to be arrays. Appends each argument after
+// the first to the first, destructively. Returns the resulting array.
+function append(first) {
+  for (var i = 1; i < arguments.length; i++) {
+    for (var j = 0; j < arguments[i].length; j++) {
+      first.push(arguments[i][j]);
+    }
+  }
+
+  return first;
+}
+
 //
 // Types
 //
@@ -56,14 +68,15 @@ var RANK_POINT_VALUES = {
   R: 5,
   N: 3,
   B: 3,
-  Q: 5,
+  Q: 9,
   K: undefined
 };
 
 //
 // Board Locations
 //
-// A board location is an object with row and colum properties.
+// A board location is an object with row and column properties.
+// Locations are treated as immutable.
 //
 
 // An array of all board locations.
@@ -114,6 +127,8 @@ function locEq(loc1, loc2) {
 //   true on the turn after it was moved doubly, to determine whether en
 //   passant is legal.
 //
+//   We treat pieces as immutable objects.
+//
 // BoardConfig:
 //   A board configuration is an object with methods get() and set() taking
 //   board locations. The contents of a square are a piece or null.
@@ -128,7 +143,7 @@ function makePiece(color, rank, loc) {
 
 // Returns a duplicate of the piece with a new location.
 function movedPiece(piece, newLoc) {
-  var newPiece = _.cloneDeep(piece);
+  var newPiece = copyPiece(piece);
   newPiece.loc = newLoc;
   return newPiece;
 }
@@ -140,9 +155,20 @@ function pieceEq(piece1, piece2) {
          locEq(piece1.loc, piece2.loc);
 }
 
+// Copies a piece.
+function copyPiece(piece) {
+  return {
+    color: piece.color,
+    rank: piece.rank,
+    loc: piece.loc,
+    hasBeenMoved: piece.hasBeenMoved,
+    justMovedDoubly: piece.justMovedDoubly
+  };
+}
+
 // Makes a board configuration with undefined contents.
 function makeBoardConfig() {
-  var board = new Object();
+  var board = {};
 
   board.array = new Array(8);
   for (var i = 0; i < 8; i++) {
@@ -158,6 +184,17 @@ function makeBoardConfig() {
   };
 
   return board;
+}
+
+// Duplicates a board configuration.
+function copyBoardConfig(board) {
+  var newBoard = makeBoardConfig();
+
+  allBoardLocs.forEach(function(loc) {
+    newBoard.set(loc, board.get(loc));
+  });
+
+  return newBoard;
 }
 
 //
@@ -176,6 +213,37 @@ function makeBoardConfig() {
 var GAME_NOT_OVER = "game not over";
 var STALEMATE = "stalemate";
 var CHECKMATE = "checkmate";
+
+// Duplicates a game state with only the properties needed for move search.
+function copyGameStateLean(state) {
+  return {
+    board: copyBoardConfig(state.board),
+    kingLocs: { B: state.kingLocs[BLACK], W: state.kingLocs[WHITE] },
+    playerToMove: state.playerToMove,
+    capturedPieces: []
+  };
+}
+
+// Does a shallow copy of a game state.
+function copyGameStateShallow(state) {
+  return {
+    board: state.board,
+    kingLocs: state.kingLocs,
+    playerToMove: state.playerToMove,
+    capturedPieces: state.capturedPieces
+  }
+}
+
+// Duplicates a game state.
+function copyGameState(state) {
+  return {
+    board: copyBoardConfig(state.board),
+    kingLocs: { B: state.kingLocs[BLACK], W: state.kingLocs[WHITE] },
+    playerToMove: state.playerToMove,
+    status: state.status,
+    capturedPieces: state.capturedPieces.slice(0, state.capturedPieces.length)
+  };
+}
 
 //
 // Move:
@@ -203,6 +271,16 @@ function moveEq(move1, move2) {
          locEq(move1.newLoc, move2.newLoc) &&
          move1.flag === move2.flag;
          // XXX: deal with promotionTo
+}
+
+// Does a shallow copy of a move. XXX: Does not copy the promotionTo
+// property. Presently this doesn't cause any bugs.
+function copyMove(move) {
+  return {
+    piece: move.piece,
+    newLoc: move.newLoc,
+    flag: move.flag
+  }
 }
 
 //
@@ -262,6 +340,32 @@ function makeStartingGameState() {
     status: GAME_NOT_OVER,
     capturedPieces: []
   };
+}
+
+//
+// Board scoring
+//
+
+// Returns the score of the given player in the given board
+// configuration.
+function playerScore(board, color) {
+  var score = 0;
+
+  allBoardLocs.forEach(function(loc) {
+    var piece = board.get(loc);
+
+    if (piece && piece.color === color && piece.rank !== KING) {
+      score += RANK_POINT_VALUES[piece.rank];
+    }
+  });
+
+  return score;
+}
+
+// Returns the score lead of the given player (calculated as their
+// score minus the opponent's score) in the given board configuration.
+function playerScoreLead(board, color) {
+  return playerScore(board, color) - playerScore(board, colorOpponent(color));
 }
 
 //
@@ -461,9 +565,12 @@ function semiLegalMovesFromLoc(state, loc) {
 var semiLegalMoveFunctions = {};
 
 semiLegalMoveFunctions[PAWN] = function(state, piece) {
-  return regularPawnMoves(state, piece).concat(doublePawnMoves(state, piece)).
-    concat(pawnCaptures(state, piece)).concat(pawnEnPassants(state, piece)).
-    concat(pawnPromotions(state, piece));
+  return append(
+    regularPawnMoves(state, piece),
+    doublePawnMoves(state, piece),
+    pawnCaptures(state, piece),
+    pawnEnPassants(state, piece),
+    pawnPromotions(state, piece));
 };
 
 function regularPawnMoves(state, piece) {
@@ -519,7 +626,7 @@ function pawnPromotions(state, piece) {
   if (piece.loc.row === (piece.color === BLACK ? 1 : 6)) {
     forwardMoves.forEach(function(move) {
       RANKS.forEach(function(rank) {
-        var newMove = _.cloneDeep(move);
+        var newMove = copyMove(move);
         newMove.promotionTo = rank;
         moves.push(newMove);
       });
@@ -614,7 +721,7 @@ function castles(state, piece, horizDir) {
 // the king has been moved.
 function castleControl(state, piece, newLoc) {
   if (state.board.get(newLoc) === null) {
-    var newState = _.cloneDeep(state);
+    var newState = copyGameStateLean(state);
     executeMove(newState, { piece: piece, newLoc: newLoc, flag: null });
 
     if (playerToMoveCanCaptureKing(newState)) {
@@ -646,7 +753,7 @@ function semiLegalMoves(state) {
   var result = [];
 
   allBoardLocs.forEach(function(loc) {
-    result = result.concat(semiLegalMovesFromLoc(state, loc));
+    append(result, semiLegalMovesFromLoc(state, loc));
   });
 
   return result;
@@ -672,14 +779,14 @@ function playerToMoveCanCaptureKing(state) {
 
 // Says whether in the given state, the given player is in check.
 function isInCheck(state, playerColor) {
-  var newState = _.clone(state);
+  var newState = copyGameStateShallow(state);
   newState.playerToMove = colorOpponent(playerColor);
   return playerToMoveCanCaptureKing(newState);
 }
 
 // Says whether the given move puts the player moving in check.
 function movePutsPlayerInCheck(state, move) {
-  var newState = _.cloneDeep(state);
+  var newState = copyGameStateLean(state);
   executeMove(newState, move);
   return playerToMoveCanCaptureKing(newState);
 }
@@ -919,11 +1026,9 @@ function displayMoveAlgebraic(state, move) {
 //
 
 function Game() {
-  this.state = makeStartingGameState();
-
   // A log of all the game states that have occurred, including the
   // current one.
-  this.stateLog = [this.state];
+  this.stateLog = [makeStartingGameState()];
   this.currentStateIndex = 0;
   this.stateBeingViewedIndex = 0;
   this.planningMode = false;
@@ -996,12 +1101,12 @@ function Game() {
         moveIsLegal(state, move)) {
       // console.log(displayMoveAlgebraic(this.state, move));
 
-      var newState = _.cloneDeep(state);
+      var newState = copyGameState(state);
       executeMove(newState, move);
       newState.status = gameStatus(newState);
       this.updateState(newState, move);
 
-      console.log(this);
+      // console.log(this);
 
       return true;
     } else {
