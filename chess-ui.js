@@ -340,7 +340,7 @@ $(document).ready(function() {
 
   // XXX: testing
   $('h1').on('click', function() {
-    console.log(bestScoreLead(game.getStateBeingViewed(), WHITE, 3));
+    console.log(bestScoreLead(game.getStateBeingViewed(), WHITE, 4));
   });
 
   refreshDisplay();
