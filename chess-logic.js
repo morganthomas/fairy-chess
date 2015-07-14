@@ -1,8 +1,3 @@
-// Status:
-//  * Move execution is completely implemented, but not tested for moves
-//    that are not yet generated.
-//  * Moves still to be generated are pawn promotions.
-
 function SHOW() {
   console.log.apply(console, arguments);
   return arguments[arguments.length - 1];
