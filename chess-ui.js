@@ -5,7 +5,7 @@ var LEFT_BORDER_WIDTH_PX = 1;
 
 // Displays a given game state.
 function displayState(game) {
-  var state = game.stateLog[game.stateBeingViewedIndex];
+  var state = game.getStateBeingViewed();
 
   hideAllPieces(state);
 
@@ -19,6 +19,12 @@ function displayState(game) {
   displayStatus(state);
   displayCapturedPieces(state);
   displayMoveLog(game);
+
+  if (game.planningMode) {
+    $('#planning-mode-toggle-button').text('Exit Planning Mode');
+  } else {
+    $('#planning-mode-toggle-button').text('Enter Planning Mode');
+  }
 }
 
 // Displays the captured pieces.
@@ -68,15 +74,19 @@ function displayMoveLog(game) {
 
     function makeMoveCell(j) {
       var $elt = $('<td></td>');
-      $elt.data('index', j+1);
-      $elt.addClass('move-log-cell');
 
       if (j < game.moveLog.length) {
+        $elt.data('index', j+1);
+        $elt.addClass('move-log-cell');
         $elt.text(game.moveAlgebraicNotations[j]);
-      }
 
-      if (j + 1 === game.stateBeingViewedIndex) {
-        $elt.addClass('move-being-viewed');
+        if (j + 1 === game.stateBeingViewedIndex) {
+          $elt.addClass('move-being-viewed');
+        }
+
+        if (j + 1 > game.currentStateIndex) {
+          $elt.addClass('hypothetical-move');
+        }
       }
 
       $tr.append($elt);
@@ -236,13 +246,14 @@ $(document).ready(function() {
   var mouseupHandler = function(upEvent) {
     if (processingPieceDrag) {
       endLoc = mouseToLoc(upEvent.pageX, upEvent.pageY);
+      var state = game.getStateBeingViewed();
 
-      var move = createMove(game.state, dragStartLoc, endLoc, null);
+      var move = createMove(state, dragStartLoc, endLoc, null);
 
       if (move && couldPromotePawn(move)) {
         // XXX: Stub interface.
         var newRank = prompt("What rank do you want to promote your pawn to?");
-        move = createMove(game.state, dragStartLoc, endLoc, newRank);
+        move = createMove(state, dragStartLoc, endLoc, newRank);
       }
 
       if (move) {
@@ -261,7 +272,7 @@ $(document).ready(function() {
   };
 
   var incrementViewedState = function() {
-    if (game.stateBeingViewedIndex < game.currentStateIndex) {
+    if (game.stateBeingViewedIndex < game.moveLog.length) {
       game.stateBeingViewedIndex++;
       refreshDisplay();
     }
@@ -284,8 +295,23 @@ $(document).ready(function() {
     refreshDisplay();
   };
 
+  var viewCurrent = function() {
+    game.stateBeingViewedIndex = game.currentStateIndex;
+    refreshDisplay();
+  }
+
   var clickMoveLogCellHandler = function() {
     game.stateBeingViewedIndex = $(this).data('index');
+    refreshDisplay();
+  };
+
+  var togglePlanningMode = function() {
+    if (game.planningMode) {
+      game.exitPlanningMode();
+    } else {
+      game.enterPlanningMode();
+    }
+
     refreshDisplay();
   };
 
@@ -296,7 +322,9 @@ $(document).ready(function() {
   $("#step-forward-button").on("click", incrementViewedState);
   $("#to-start-button").on("click", viewStart);
   $("#to-end-button").on("click", viewEnd);
+  $("#current-move-button").on("click", viewCurrent);
   $("#move-record-table").on('click', '.move-log-cell', clickMoveLogCellHandler);
+  $('#planning-mode-toggle-button').on('click', togglePlanningMode);
 
   refreshDisplay();
 });

@@ -73,6 +73,14 @@ body {
   background-color: lightgrey;
 }
 
+.hypothetical-move {
+  color: grey;
+}
+
+.move-log-controls {
+  margin-bottom: 5px;
+}
+
 .player-indicator {
   width: 16px;
   height: 16px;

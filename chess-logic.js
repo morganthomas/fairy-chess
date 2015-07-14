@@ -931,6 +931,7 @@ function Game() {
   this.stateLog = [this.state];
   this.currentStateIndex = 0;
   this.stateBeingViewedIndex = 0;
+  this.planningMode = false;
 
   // A log of all the moves that have occurred. Move n resulted in
   // state n+1.
@@ -939,32 +940,57 @@ function Game() {
   // A log (for performance) of the algebraic notation of each move.
   this.moveAlgebraicNotations = [];
 
+  // Gets the state being viewed.
+  this.getStateBeingViewed = function() {
+    return this.stateLog[this.stateBeingViewedIndex];
+  }
+
   // Updates the state to the new given state, which was produced by
-  // the given move. Assumes the current state is the state being
-  // viewed.
+  // the given move. Assumes the state being viewed is the last state
+  // in the log.
   this.updateState = function(newState, move) {
-    this.stateLog.push(newState);
-    this.moveLog.push(move);
-    this.moveAlgebraicNotations.push(displayMoveAlgebraic(this.state, move));
-    this.currentStateIndex++;
-    this.stateBeingViewedIndex++;
-    this.state = newState;
+    if (this.stateBeingViewedIndex === this.stateLog.length - 1) {
+      this.stateLog.push(newState);
+      this.moveLog.push(move);
+      this.moveAlgebraicNotations.push(displayMoveAlgebraic(this.state, move));
+
+      if (!this.planningMode) {
+        this.currentStateIndex++;
+      }
+
+      this.stateBeingViewedIndex++;
+    }
   };
+
+  // Enter and exit planning mode.
+  this.enterPlanningMode = function() {
+    this.planningMode = true;
+  }
+
+  this.exitPlanningMode = function() {
+    this.planningMode = false;
+    this.stateLog = this.stateLog.slice(0, this.currentStateIndex + 1);
+    this.moveLog = this.moveLog.slice(0, this.currentStateIndex);
+    this.moveAlgebraicNotations = this.moveAlgebraicNotations.slice(0, this.currentStateIndex);
+    this.stateBeingViewedIndex = Math.min(this.stateBeingViewedIndex, this.currentStateIndex);
+  }
 
   // Takes a move and, if the move is legal, performs it and updates the
   // game state. It returns true if the move was legal. Also, only
   // operative if the current state is being viewed.
   this.performMove = function(move) {
-    if (this.currentStateIndex === this.stateBeingViewedIndex &&
-        moveIsLegal(this.state, move)) {
+    var state = this.getStateBeingViewed();
+
+    if (this.stateBeingViewedIndex === this.stateLog.length - 1 &&
+        moveIsLegal(state, move)) {
       // console.log(displayMoveAlgebraic(this.state, move));
 
-      var newState = _.cloneDeep(this.state);
+      var newState = _.cloneDeep(state);
       executeMove(newState, move);
       newState.status = gameStatus(newState);
       this.updateState(newState, move);
 
-      // console.log(this);
+      console.log(this);
 
       return true;
     } else {

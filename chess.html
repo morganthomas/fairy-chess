@@ -135,6 +135,8 @@
   <div id="chess-dashboard" class="col-md-4 col-lg-5 panel panel-primary">
     <div class="panel-heading">White vs. Black</div>
     <div id="captured-pieces" class="chess-dashboard-subpanel panel panel-primary"></div>
+    <div>
+    </div>
     <div id="move-record" class="chess-dashboard-subpanel panel panel-primary">
       <div class="panel-body">
         <table class="table" id="move-record-table">
@@ -150,11 +152,16 @@
         </table>
       </div>
       <div class="panel-footer noselect">
-        <button id="to-start-button" class="btn btn-default"><i class="fa fa-fast-backward"></i></button>
-        <button id="step-backward-button" class="btn btn-default"><i class="fa fa-step-backward"></i></button>
-        <span style="display: inline-block; width: 50px"></span>
-        <button id="step-forward-button" class="btn btn-default"><i class="fa fa-step-forward"></i></button>
-        <button id="to-end-button" class="btn btn-default"><i class="fa fa-fast-forward"></i></button>
+        <div class="move-log-controls">
+          <button id="to-start-button" class="btn btn-default"><i class="fa fa-fast-backward"></i></button>
+          <button id="step-backward-button" class="btn btn-default"><i class="fa fa-step-backward"></i></button>
+          <button id="current-move-button" class="btn btn-default"><i class="fa fa-home"></i></button>
+          <button id="step-forward-button" class="btn btn-default"><i class="fa fa-step-forward"></i></button>
+          <button id="to-end-button" class="btn btn-default"><i class="fa fa-fast-forward"></i></button>
+        </div>
+        <div>
+          <button class="btn btn-primary" id="planning-mode-toggle-button">Enter Planning Mode</button>
+        </div>
       </div>
     </div>
   </div>
@@ -165,7 +172,6 @@
 <script src="lodash.js"></script>
 <script src="chess-logic.js"></script>
 <script src="chess-ui.js"></script>
-<script src="chess-test.js"></script>
 
 </body>
 
