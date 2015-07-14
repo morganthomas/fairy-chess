@@ -63,6 +63,7 @@ body {
 }
 
 #move-record-table {
+  /*font-weight: bold;*/
 }
 
 #move-record-table thead th {
@@ -70,11 +71,12 @@ body {
 }
 
 .move-being-viewed {
-  background-color: lightgrey;
+  background-color: #EEE;
 }
 
 .hypothetical-move {
-  color: grey;
+  color: #888;
+  /*font-weight: normal;*/
 }
 
 .panel-footer-row-notlast {
