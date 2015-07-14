@@ -79,6 +79,14 @@ body {
   /*font-weight: normal;*/
 }
 
+#main-controls {
+  margin-top: 10px;
+}
+
+#main-controls > div {
+  margin-bottom: 5px;
+}
+
 .panel-footer-row-notlast {
   margin-bottom: 5px;
 }
