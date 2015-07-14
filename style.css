@@ -132,6 +132,8 @@ body {
 }
 
 .chess-piece {
+  width: 64px;
+  height: 64px;
   position: absolute;
   z-index: 0;
 }
