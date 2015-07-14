@@ -3,7 +3,6 @@ Frontend stuff:
  [ ] Refactoring:
   * Named constants
   * Function names are verbs
-  * ==
   * Don't need new Object(), new Array()
   * Enums: put in objects?
   * Global vars at top of file?

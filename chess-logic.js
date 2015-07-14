@@ -23,7 +23,7 @@ var BLACK = "B";
 var WHITE = "W";
 
 function colorOpponent(color) {
-  if (color == BLACK) {
+  if (color === BLACK) {
     return WHITE;
   } else {
     return BLACK;
@@ -31,7 +31,7 @@ function colorOpponent(color) {
 }
 
 function colorAdvanceDir(color) {
-  if (color == BLACK) {
+  if (color === BLACK) {
     return -1;
   } else {
     return 1;
@@ -96,8 +96,8 @@ function locPlus(loc1, loc2) {
 
 // Says whether two locations are equal.
 function locEq(loc1, loc2) {
-  return loc1.row == loc2.row &&
-         loc1.col == loc2.col;
+  return loc1.row === loc2.row &&
+         loc1.col === loc2.col;
 }
 
 //
@@ -140,8 +140,8 @@ function movedPiece(piece, newLoc) {
 
 // Says whether two pieces are equal.
 function pieceEq(piece1, piece2) {
-  return piece1.color == piece2.color &&
-         piece1.rank == piece2.rank &&
+  return piece1.color === piece2.color &&
+         piece1.rank === piece2.rank &&
          locEq(piece1.loc, piece2.loc);
 }
 
@@ -206,7 +206,7 @@ var CASTLE = "castle";
 function moveEq(move1, move2) {
   return pieceEq(move1.piece, move2.piece) &&
          locEq(move1.newLoc, move2.newLoc) &&
-         move1.flag == move2.flag;
+         move1.flag === move2.flag;
          // XXX: deal with promotionTo
 }
 
@@ -360,7 +360,7 @@ function simpleMovementController(whenEmpty, whenFriendly, whenEnemy) {
     if (newLocContents) {
       // newLocContents is a piece occupying the square we're trying to
       // move into.
-      if (newLocContents.color == piece.color) {
+      if (newLocContents.color === piece.color) {
         return whenFriendly;
       } else {
         return whenEnemy;
@@ -404,12 +404,12 @@ function moveIsAllowed(state, spec, controller, piece) {
     if (inBounds(newLoc)) {
       var iterControl = controller(state, piece, newLoc);
 
-      if (spec.length == 1) {
-        return iterControl == STOP_HERE_INCLUSIVE ||
-               iterControl == CONTINUE;
+      if (spec.length === 1) {
+        return iterControl === STOP_HERE_INCLUSIVE ||
+               iterControl === CONTINUE;
       } else {
-        if (iterControl == CONTINUE ||
-            iterControl == CONTINUE_BUT_NO_STOP) {
+        if (iterControl === CONTINUE ||
+            iterControl === CONTINUE_BUT_NO_STOP) {
           return moveIsAllowed(state, spec.slice(1, spec.length), controller,
             movedPiece(piece, newLoc));
         } else {
@@ -452,7 +452,7 @@ function findMoves(state, specs, controller, piece, flag) {
 function semiLegalMovesFromLoc(state, loc) {
   var piece = state.board.get(loc);
 
-  if (piece !== null && piece.color == state.playerToMove) {
+  if (piece !== null && piece.color === state.playerToMove) {
     return semiLegalMoveFunctions[piece.rank](state, piece);
   } else {
     return [];
