@@ -7,7 +7,7 @@ var LEFT_BORDER_WIDTH_PX = 1;
 function displayState(game) {
   var state = game.getStateBeingViewed();
 
-  hideAllPieces(state);
+  $(".chess-piece").remove();
 
   allBoardLocs.forEach(function(loc) {
     var piece = state.board.get(loc);
@@ -19,12 +19,7 @@ function displayState(game) {
   displayStatus(state);
   displayCapturedPieces(state);
   displayMoveLog(game);
-
-  if (game.planningMode) {
-    $('#planning-mode-toggle-button').text('Exit Planning Mode');
-  } else {
-    $('#planning-mode-toggle-button').text('Enter Planning Mode');
-  }
+  displayPlanningControls(game);
 }
 
 // Displays the captured pieces.
@@ -131,9 +126,14 @@ function displayStatus(state) {
   $("#game-status").addClass(alertClass);
 }
 
-// Removes all piece objects from the DOM.
-function hideAllPieces() {
-  $(".chess-piece").remove();
+function displayPlanningControls(game) {
+  if (game.planningMode) {
+    $('#planning-mode-toggle-button').text('Exit Planning Mode');
+    $('#commit-move-div').show();
+  } else {
+    $('#planning-mode-toggle-button').text('Enter Planning Mode');
+    $('#commit-move-div').hide();
+  }
 }
 
 // Size of a square, in pixels.
@@ -315,6 +315,11 @@ $(document).ready(function() {
     refreshDisplay();
   };
 
+  var commitFirstMove = function() {
+    game.commitFirstPlannedMove();
+    refreshDisplay();
+  }
+
   $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
   $('body').on('mousemove', mousemoveHandler);
   $("#chess-board").on("mouseup", mouseupHandler);
@@ -325,6 +330,7 @@ $(document).ready(function() {
   $("#current-move-button").on("click", viewCurrent);
   $("#move-record-table").on('click', '.move-log-cell', clickMoveLogCellHandler);
   $('#planning-mode-toggle-button').on('click', togglePlanningMode);
+  $('#commit-move-button').on('click', commitFirstMove);
 
   refreshDisplay();
 });

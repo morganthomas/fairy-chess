@@ -975,6 +975,14 @@ function Game() {
     this.stateBeingViewedIndex = Math.min(this.stateBeingViewedIndex, this.currentStateIndex);
   }
 
+  this.commitFirstPlannedMove = function() {
+    if (this.planningMode && this.stateLog.length > this.currentStateIndex + 1) {
+      var firstPlannedMove = this.moveLog[this.currentStateIndex + 1 - 1];
+      this.exitPlanningMode();
+      this.performMove(firstPlannedMove);
+    }
+  }
+
   // Takes a move and, if the move is legal, performs it and updates the
   // game state. It returns true if the move was legal. Also, only
   // operative if the current state is being viewed.
