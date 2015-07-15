@@ -16,7 +16,7 @@ function displayState(game) {
     }
   });
 
-  displayStatus(state);
+  // displayStatus(state); // XXX
   displayCapturedPieces(state);
   displayMoveLog(game);
   displayPlanningControls(game);
@@ -151,16 +151,8 @@ function pieceImageName(piece) {
   prettyColorNames[BLACK] = "Black";
   prettyColorNames[WHITE] = "White";
 
-  var prettyRankNames = {};
-  prettyRankNames[PAWN] = "Pawn";
-  prettyRankNames[ROOK] = "Rook";
-  prettyRankNames[KNIGHT] = "Knight";
-  prettyRankNames[BISHOP] = "Bishop";
-  prettyRankNames[QUEEN] = "Queen";
-  prettyRankNames[KING] = "King";
-
   return "images/" + prettyColorNames[piece.color] +
-    prettyRankNames[piece.rank] + ".png";
+    piece.type.name + ".png";
 }
 
 function makePieceImage(piece) {
@@ -198,6 +190,8 @@ $(document).ready(function() {
   var dragStartLoc = null;
   var pieceBeingDragged = null;
 
+  var pieceBeingHovered = null;
+
   var resetDragState = function() {
     processingPieceDrag = false;
     dragStartLoc = null;
@@ -207,6 +201,8 @@ $(document).ready(function() {
 
   var refreshDisplay = function() {
     displayState(game);
+
+    console.log(pieceBeingHovered);
   };
 
   // Returns the CSS for the position of a piece being dragged, given the
@@ -271,10 +267,22 @@ $(document).ready(function() {
     }
   };
 
-  var mousemoveHandler = function(moveEvent) {
+  var mouseMoveHandler = function(moveEvent) {
     if (processingPieceDrag) {
       updateDraggedPiecePosition(moveEvent, false);
     }
+  };
+
+  var mouseEnterHandler = function(mouseEvent) {
+    var loc = mouseToLoc(mouseEvent.pageX, mouseEvent.pageY);
+    pieceBeingHovered = game.getStateBeingViewed().board.get(loc);
+    refreshDisplay();
+  };
+
+  var mouseLeaveHandler = function(mouseEvent) {
+    console.log('hey!')
+    pieceBeingHovered = null;
+    refreshDisplay();
   };
 
   var incrementViewedState = function() {
@@ -327,8 +335,10 @@ $(document).ready(function() {
   }
 
   $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
-  $('body').on('mousemove', mousemoveHandler);
+  $('body').on('mousemove', mouseMoveHandler);
   $("#chess-board").on("mouseup", mouseupHandler);
+  $("#chess-board").on("mouseenter", ".chess-piece", mouseEnterHandler);
+  $("#chess-board").on("mouseleave", ".chess-piece", mouseLeaveHandler);
   $("#step-backward-button").on("click", decrementViewedState);
   $("#step-forward-button").on("click", incrementViewedState);
   $("#to-start-button").on("click", viewStart);

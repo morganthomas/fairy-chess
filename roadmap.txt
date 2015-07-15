@@ -16,6 +16,8 @@ Frontend stuff:
  [x] Add move to start and move to end buttons
  [x] Enable user move lookahead
  [ ] Enable computer move lookahead
+ [ ] Score checkmate!
+ [ ] Add progress bar for move search
  [ ] Implement pawn promotion UI
  [ ] Enable starting/resetting games
  [ ] Add player names
