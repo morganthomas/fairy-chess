@@ -47,6 +47,8 @@ function randomSelect(options) {
       return options[i][1];
     }
   }
+
+  console.log("Error: didn't select anything from ", options);
 }
 
 //
@@ -227,6 +229,13 @@ function vectorToLoc(startLoc, vector) {
   return endLoc;
 }
 
+// Flips a vector vertically.
+function flipVectorVert(vector) {
+  return vector.map(function(diff) {
+    return { row: -diff.row, col: diff.col };
+  });
+}
+
 // The different movement controllers we use are classified as follows.
 // The two movement "classes" are REGULAR and LEAP. Furthermore, a movement
 // type can allow or disallow capturing. XXX: Add hopping.
@@ -254,8 +263,8 @@ function getMovementController(movementClass, canCapture) {
 //
 
 var LOWLY_CAPTURE_VECTORS = [
- [0.3, MOVEMENT_VECTORS[0]], [0.4, MOVEMENT_VECTORS[1]],
- [0.15, MOVEMENT_VECTORS[2]]
+ [0.5, MOVEMENT_VECTORS[0]], [0.4, MOVEMENT_VECTORS[1]],
+ [0.1, MOVEMENT_VECTORS[2]]
 ];
 
 var LOWLY_SYMMETRIES = [
@@ -300,8 +309,8 @@ var MAJOR_REGULAR_VECTORS = [
   [0.05, MOVEMENT_VECTORS[3]],
   [0.05, MOVEMENT_VECTORS[4]],
   [0.05, MOVEMENT_VECTORS[5]],
-  [0.075, MOVEMENT_VECTORS[6]],
-  [0.075, MOVEMENT_VECTORS[7]]
+  [0.125, MOVEMENT_VECTORS[6]],
+  [0.125, MOVEMENT_VECTORS[7]]
 ];
 
 var MAJOR_LEAP_VECTORS = [
@@ -763,15 +772,20 @@ function vectorRepetitions(vector) {
   return repetitions;
 }
 
-function movementTypeVectors(type) {
-  var rotatedVectors = vectorRotations(type.vector, type.symmetry);
-  return _.flatten(rotatedVectors.map(vectorRepetitions));
+function movementTypeVectors(color, type) {
+  var vectorOrienter = color === BLACK ? flipVectorVert : _.identity;
+  var vector = vectorOrienter(type.vector);
+
+  var repeatFunc = type.repeat ? vectorRepetitions : function(a) { return [a]; };
+
+  var rotatedVectors = vectorRotations(vector, type.symmetry);
+  return _.flatten(rotatedVectors.map(repeatFunc));
 }
 
 // Takes a state and a piece, and returns all semi-legal moves for that piece.
 function pieceSemiLegalMoves(state, piece) {
   return _.flatten(piece.type.movementTypes.map(function(movementType) {
-    return findMoves(state, movementTypeVectors(movementType),
+    return findMoves(state, movementTypeVectors(piece.color, movementType),
       movementType.controller, piece);
   }));
 }

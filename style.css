@@ -149,6 +149,14 @@ body {
   background-color: white;
 }
 
+.chess-square-highlighted.black-square {
+  background-color: #6D7780;
+}
+
+.chess-square-highlighted.white-square {
+  background-color: grey;
+}
+
 .chess-piece {
   width: 64px;
   height: 64px;

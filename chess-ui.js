@@ -189,7 +189,6 @@ $(document).ready(function() {
   var processingPieceDrag = false;
   var dragStartLoc = null;
   var pieceBeingDragged = null;
-
   var pieceBeingHovered = null;
 
   var resetDragState = function() {
@@ -201,8 +200,6 @@ $(document).ready(function() {
 
   var refreshDisplay = function() {
     displayState(game);
-
-    console.log(pieceBeingHovered);
   };
 
   // Returns the CSS for the position of a piece being dragged, given the
@@ -274,15 +271,25 @@ $(document).ready(function() {
   };
 
   var mouseEnterHandler = function(mouseEvent) {
+    var state = game.getStateBeingViewed();
     var loc = mouseToLoc(mouseEvent.pageX, mouseEvent.pageY);
-    pieceBeingHovered = game.getStateBeingViewed().board.get(loc);
-    refreshDisplay();
+    pieceBeingHovered = state.board.get(loc);
+
+    if (!pieceBeingHovered || pieceBeingDragged) {
+      return;
+    }
+
+    // XXX: Legal moves only?
+    pieceSemiLegalMoves(state, pieceBeingHovered)
+      .forEach(function (move) {
+        $('#row-' + move.newLoc.row + ' .col-' + move.newLoc.col)
+          .addClass('chess-square-highlighted');
+      });
   };
 
   var mouseLeaveHandler = function(mouseEvent) {
-    console.log('hey!')
     pieceBeingHovered = null;
-    refreshDisplay();
+    $('.chess-square').removeClass('chess-square-highlighted');
   };
 
   var incrementViewedState = function() {
@@ -337,6 +344,7 @@ $(document).ready(function() {
   $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
   $('body').on('mousemove', mouseMoveHandler);
   $("#chess-board").on("mouseup", mouseupHandler);
+  $("#chess-board").hover(mouseEnterHandler, mouseLeaveHandler);
   $("#chess-board").on("mouseenter", ".chess-piece", mouseEnterHandler);
   $("#chess-board").on("mouseleave", ".chess-piece", mouseLeaveHandler);
   $("#step-backward-button").on("click", decrementViewedState);
