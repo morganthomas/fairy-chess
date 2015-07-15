@@ -268,28 +268,25 @@ $(document).ready(function() {
     if (processingPieceDrag) {
       updateDraggedPiecePosition(moveEvent, false);
     }
-  };
 
-  var mouseEnterHandler = function(mouseEvent) {
+    $('.chess-square').removeClass('chess-square-highlighted');
     var state = game.getStateBeingViewed();
-    var loc = mouseToLoc(mouseEvent.pageX, mouseEvent.pageY);
-    pieceBeingHovered = state.board.get(loc);
+    var loc = mouseToLoc(moveEvent.pageX, moveEvent.pageY);
 
-    if (!pieceBeingHovered || pieceBeingDragged) {
+    if (!inBounds(loc)) {
       return;
     }
 
-    // XXX: Legal moves only?
-    pieceSemiLegalMoves(state, pieceBeingHovered)
-      .forEach(function (move) {
-        $('#row-' + move.newLoc.row + ' .col-' + move.newLoc.col)
-          .addClass('chess-square-highlighted');
-      });
-  };
+    pieceBeingHovered = state.board.get(loc);
 
-  var mouseLeaveHandler = function(mouseEvent) {
-    pieceBeingHovered = null;
-    $('.chess-square').removeClass('chess-square-highlighted');
+    if (pieceBeingHovered && !processingPieceDrag) {
+      // XXX: Legal moves only?
+      pieceSemiLegalMoves(state, pieceBeingHovered)
+        .forEach(function (move) {
+          $('#row-' + move.newLoc.row + ' .col-' + move.newLoc.col)
+            .addClass('chess-square-highlighted');
+        });
+    }
   };
 
   var incrementViewedState = function() {
@@ -344,9 +341,8 @@ $(document).ready(function() {
   $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
   $('body').on('mousemove', mouseMoveHandler);
   $("#chess-board").on("mouseup", mouseupHandler);
-  $("#chess-board").hover(mouseEnterHandler, mouseLeaveHandler);
-  $("#chess-board").on("mouseenter", ".chess-piece", mouseEnterHandler);
-  $("#chess-board").on("mouseleave", ".chess-piece", mouseLeaveHandler);
+  // $("#chess-board").on("mousemove", mouseEnterHandler);
+  // $("#chess-board").on("mouseout", ".chess-square", mouseLeaveHandler);
   $("#step-backward-button").on("click", decrementViewedState);
   $("#step-forward-button").on("click", incrementViewedState);
   $("#to-start-button").on("click", viewStart);
