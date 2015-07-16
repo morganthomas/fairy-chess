@@ -137,14 +137,16 @@ var CONTINUE_BUT_NO_STOP = "continue no stop";
 // to see whether you are allowed to continue (which depends e.g. on
 // whether the piece is blocked).
 //
+// A movement controller also has a property "name," which is its name.
+//
 
 // A movement controller manufacturing function for simple movement
 // controllers. Makes a movement controller given specifications for
 // what iteration controls to return in the case of moving into a square
 // occupied by a friendly piece, a square occupied by an enemy piece, and
-// an empty square.
-function simpleMovementController(whenEmpty, whenFriendly, whenEnemy) {
-  return function(state, piece, newLoc) {
+// an empty square. Also takes a name parameter.
+function simpleMovementController(whenEmpty, whenFriendly, whenEnemy, name) {
+  var controller = function(state, piece, newLoc) {
     var newLocContents = state.board.get(newLoc);
 
     if (newLocContents) {
@@ -159,6 +161,10 @@ function simpleMovementController(whenEmpty, whenFriendly, whenEnemy) {
       return whenEmpty;
     }
   };
+  
+  controller.controllerName = name;
+
+  return controller;
 }
 
 //
@@ -248,10 +254,12 @@ var MOVEMENT_LEAP = "leap";
 function getMovementController(movementClass, canCapture) {
   if (movementClass === MOVEMENT_REGULAR) {
     return simpleMovementController(CONTINUE, STOP_HERE_EXCLUSIVE,
-      canCapture ? STOP_HERE_INCLUSIVE : STOP_HERE_EXCLUSIVE);
+      canCapture ? STOP_HERE_INCLUSIVE : STOP_HERE_EXCLUSIVE,
+      canCapture ? "regular" : "regular (no capture)");
   } else {
     return simpleMovementController(CONTINUE, CONTINUE_BUT_NO_STOP,
-     canCapture ? CONTINUE : CONTINUE_BUT_NO_STOP);
+     canCapture ? CONTINUE : CONTINUE_BUT_NO_STOP,
+     canCapture ? "leap" : "leap (no capture)");
   }
 }
 
@@ -883,6 +891,27 @@ function createMove(state, loc1, loc2) {
   return null;
 }
 
+//
+// Algebraic notation
+//
+
+function displayRowAlgebraic(rowNum) {
+  return (rowNum + 1).toString();
+}
+
+function displayColAlgebraic(colNum) {
+  var COL_NAMES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+  return COL_NAMES[colNum];
+}
+
+function displayLocAlgebraic(loc) {
+  return displayColAlgebraic(loc.col) + displayRowAlgebraic(loc.row);
+}
+
+function displayMoveAlgebraic(state, move) {
+  return move.piece.type.name + " " + displayLocAlgebraic(move.piece.loc) + "-" +
+    displayLocAlgebraic(move.newLoc);
+}
 
 //
 // Game object
@@ -913,7 +942,7 @@ function Game() {
   this.truncateStateLog = function(index) {
     this.stateLog = this.stateLog.slice(0, index + 1);
     this.moveLog = this.moveLog.slice(0, index);
-    // this.moveAlgebraicNotations = this.moveAlgebraicNotations.slice(0, index); // XXX
+    this.moveAlgebraicNotations = this.moveAlgebraicNotations.slice(0, index); // XXX
   }
 
   // Updates the state to the new given state, which was produced by
@@ -924,8 +953,8 @@ function Game() {
       this.truncateStateLog(this.stateBeingViewedIndex);
       this.stateLog.push(newState);
       this.moveLog.push(move);
-      // this.moveAlgebraicNotations.push(
-      //   displayMoveAlgebraic(this.getStateBeingViewed(), move)); // XXX
+      this.moveAlgebraicNotations.push(
+        displayMoveAlgebraic(this.getStateBeingViewed(), move)); // XXX
 
       if (!this.planningMode) {
         this.currentStateIndex++;

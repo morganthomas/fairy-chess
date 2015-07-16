@@ -41,6 +41,10 @@ body {
   margin: 20px;
 }
 
+#movement-rules-display {
+  min-height: 4em;  
+}
+
 #captured-pieces {
   min-height: 70px;
   text-align: left;
@@ -68,6 +72,10 @@ body {
 
 #move-record-table thead th {
   text-align: center;
+}
+
+.move-log-cell {
+  width: 40%;
 }
 
 .move-being-viewed {

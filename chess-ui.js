@@ -1,5 +1,3 @@
-// Every piece object in the DOM has the class .chess-piece.
-
 // The size of the left border of the chess squares.
 var LEFT_BORDER_WIDTH_PX = 1;
 
@@ -20,6 +18,41 @@ function displayState(game) {
   displayCapturedPieces(state);
   displayMoveLog(game);
   displayPlanningControls(game);
+}
+
+// Returns a string representing the given movement vector.
+function displayMovementVector(vector) {
+  return vector.map(function(diff) {
+    return diff.row === 0 ?
+      (diff.col === 1 ? '→' : '←') :
+      (diff.row === 1 ?
+        (diff.col === 0 ? '↑' :
+          (diff.col === 1 ? '↗' : '↖')) :
+        (diff.col === 0 ? '↓' :
+          (diff.col === 1 ? '↘' : '↙')));
+  }).join('');
+}
+
+// Displays the movement rules for the given piece.
+function displayMovementRules(piece) {
+  var pieceText = piece.type.name + (piece.type.royal ? " (royal)" : "") + ". ";
+  $('#movement-rules-display').append($('<p></p>').text(pieceText));
+
+  piece.type.movementTypes.forEach(function(movementType) {
+    var movementText = displayMovementVector(movementType.vector) +
+     ' ' + movementType.controller.controllerName +
+     ' ' + movementType.symmetry +
+     (movementType.repeat ? ' repeat' : '') + '.';
+
+    var $elt = $('<p></p>');
+    $elt.text(movementText);
+
+    $('#movement-rules-display').append($elt);
+  });
+}
+
+function clearMovementRulesDisplay() {
+  $('#movement-rules-display').empty();
 }
 
 // Displays the captured pieces.
@@ -270,6 +303,7 @@ $(document).ready(function() {
     }
 
     $('.chess-square').removeClass('chess-square-highlighted');
+    clearMovementRulesDisplay();
     var state = game.getStateBeingViewed();
     var loc = mouseToLoc(moveEvent.pageX, moveEvent.pageY);
 
@@ -286,6 +320,8 @@ $(document).ready(function() {
           $('#row-' + move.newLoc.row + ' .col-' + move.newLoc.col)
             .addClass('chess-square-highlighted');
         });
+
+      displayMovementRules(pieceBeingHovered);
     }
   };
 
@@ -351,11 +387,6 @@ $(document).ready(function() {
   $("#move-record-table").on('click', '.move-log-cell', clickMoveLogCellHandler);
   $('#planning-mode-toggle-button').on('click', togglePlanningMode);
   $('#commit-move-button').on('click', commitFirstMove);
-
-  // XXX: testing
-  $('h1').on('click', function() {
-    console.log(bestScoreLead(game.getStateBeingViewed(), WHITE, 4));
-  });
 
   refreshDisplay();
 });
