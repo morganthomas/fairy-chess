@@ -161,7 +161,7 @@ function simpleMovementController(whenEmpty, whenFriendly, whenEnemy, name) {
       return whenEmpty;
     }
   };
-  
+
   controller.controllerName = name;
 
   return controller;
@@ -333,8 +333,8 @@ var MAJOR_LEAP_VECTORS = [
 ];
 
 var MAJOR_MOVEMENT_CLASSES = [
-  [0.7, MOVEMENT_REGULAR],
-  [0.3, MOVEMENT_LEAP]
+  [0.6, MOVEMENT_REGULAR],
+  [0.4, MOVEMENT_LEAP]
 ];
 
 var MAJOR_SYMMETRIES = [
