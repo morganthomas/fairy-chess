@@ -1,0 +1,23 @@
+extends layout
+
+block content
+  //- Error comes through via the context passed when calling res.render('login', {...})
+  //- You'll see this in controllers/authentication.js
+  //- If the error exists, we'll display it.
+  if error
+    h3= error
+
+  //- Form for handling existing user logins.
+  h1 Existing Users
+  form(action="/auth/login", method="post")
+    input(type="text", name="username", placeholder="Username")
+    input(type="password", name="password", placeholder="Password")
+    input(type="submit")
+
+  //- Form for allowing new users to register.
+  h1 Register
+  form(action="/auth/signup", method="post")
+    input(type="text", name="username", placeholder="Username")
+    input(type="email", name="email", placeholder="Email")
+    input(type="password", name="password", placeholder="Password")
+    input(type="submit")
