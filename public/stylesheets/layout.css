@@ -1,3 +1,21 @@
 body {
-  
+  background-color: lightgrey;
+  padding: 0;
 }
+
+.page {
+  background-color: white;
+  padding: 50px;
+  text-align: center;
+  line-height: 100%;
+}
+
+.horizontal-spacer {
+  display: inline-block;
+  height: 1px;
+  width: 10px;
+}
+
+/*.auth-controls li {
+  padding: 20px;
+}*/

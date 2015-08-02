@@ -9,6 +9,7 @@ var passport = require('passport');
 var passportConfig = require('./config/passport');
 var indexController = require('./controllers/index');
 var authenticationController = require('./controllers/authentication');
+var gameController = require('./controllers/game');
 
 mongoose.connect('mongodb://localhost/fairychess');
 
@@ -34,6 +35,10 @@ app.get('/auth/login', authenticationController.login);
 app.post('/auth/login', authenticationController.processLogin);
 app.post('/auth/signup', authenticationController.processSignup);
 app.get('/auth/logout', authenticationController.logout);
+
+app.post('/game/initiate-challenge', gameController.initiateChallenge);
+app.post('/game/withdraw-challenge', gameController.removeChallenge('sender', 'withdrawn'));
+app.post('/game/reject-challenge', gameController.removeChallenge('receiver', 'rejected'));
 
 // ***** IMPORTANT ***** //
 // By including this middleware (defined in our config/passport.js module.exports),

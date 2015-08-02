@@ -2,13 +2,13 @@ var mongoose = require('mongoose');
 
 var challengeSchema = mongoose.Schema({
   sender: {
-    type: mongoose.Schema.ObjectID,
+    type: mongoose.Schema.ObjectId,
     required: true,
     ref: 'user'
   },
   receiver: {
-    type: mongoose.Schema.ObjectID,
-    required: true
+    type: mongoose.Schema.ObjectId,
+    required: true,
     ref: 'user'
   },
   timestamp: {
@@ -18,12 +18,12 @@ var challengeSchema = mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['open', 'accepted', 'rejected', 'expired'],
+    enum: ['open', 'accepted', 'rejected', 'expired', 'withdrawn'],
     required: true,
     default: 'open'
   },
   game: {
-    type: mongoose.Schema.ObjectID,
+    type: mongoose.Schema.ObjectId,
     required: false,
     ref: 'game'
   }
