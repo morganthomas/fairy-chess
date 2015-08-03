@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 
 var gameSchema = mongoose.Schema({
-  // A map from the keys WHITE and BLACK to the players' IDs
+  // A map from the keys white and black to the players' IDs
   players: {
     type: Object,
     required: true
@@ -15,14 +15,12 @@ var gameSchema = mongoose.Schema({
 
   // A list of all game states that have occurred.
   states: {
-    type: [Object],
-    required: true
+    type: Array
   },
 
   // A list of all moves that have occurred.
   moves: {
-    type: [Object],
-    required: true,
+    type: Array,
     default: []
   }
 });

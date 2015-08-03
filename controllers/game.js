@@ -1,5 +1,23 @@
 var User = require('../models/user');
 var Challenge = require('../models/challenge');
+var Game = require('../models/game');
+var _ = require('../public/scripts/lodash');
+
+// Constructs a new Game object, with the two specified players (given as user IDs),
+// who are randomly selected to be black and white.
+var newGame = function(player1, player2) {
+  var shuffledPlayers = _.shuffle([player1, player2]);
+  var players = {};
+  players.white = shuffledPlayers[0];
+  players.black = shuffledPlayers[1];
+
+  return new Game({
+    players: players,
+    pieceTypes: {}, // XXX
+    states: [], // XXX
+    moves: []
+  });
+}
 
 var gameController = {
   initiateChallenge: function(req, res) {
@@ -39,9 +57,6 @@ var gameController = {
         } else if (!challenge) {
           return res.send("Challenge does not exist.");
         } else {
-          console.log(challenge);
-          console.log(req.user.id);
-
           if (!challenge[who].equals(req.user.id)) {
             return res.send("You cannot remove this challenge!");
           }
@@ -58,6 +73,39 @@ var gameController = {
         }
       });
     }
+  },
+
+  acceptChallenge: function(req, res) {
+    Challenge.findById(req.body.challenge, function(err, challenge) {
+      if (err) {
+        return res.send("Database error.");
+      } else if (!challenge) {
+        return res.send("Challenge does not exist.");
+      } else {
+        if (!challenge.receiver.equals(req.user.id)) {
+          return res.send("You are not the recipient of this challenge!");
+        }
+
+        challenge.status = 'accepted';
+        var game = newGame(challenge.sender, challenge.receiver);
+
+        game.save(function(err) {
+          if (err) {
+            return res.send("Database error: " + err.toString());
+          }
+
+          challenge.game = game.id;
+
+          challenge.save(function(err) {
+            if (err) {
+              return res.send("Database error: " + err.toString());
+            }
+
+            res.send("Challenge accepted!");
+          });
+        });
+      }
+    })
   }
 }
 

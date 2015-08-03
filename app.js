@@ -39,6 +39,7 @@ app.get('/auth/logout', authenticationController.logout);
 app.post('/game/initiate-challenge', gameController.initiateChallenge);
 app.post('/game/withdraw-challenge', gameController.removeChallenge('sender', 'withdrawn'));
 app.post('/game/reject-challenge', gameController.removeChallenge('receiver', 'rejected'));
+app.post('/game/accept-challenge', gameController.acceptChallenge);
 
 // ***** IMPORTANT ***** //
 // By including this middleware (defined in our config/passport.js module.exports),

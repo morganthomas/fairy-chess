@@ -39,6 +39,22 @@ var rejectChallenge = function(id) {
   })
 }
 
+var acceptChallenge = function(id) {
+  $.ajax({
+    url: '/game/accept-challenge',
+    type: 'POST',
+    data: { challenge: id },
+
+    success: function(res) {
+      alert(res);
+    }
+  })
+}
+
+var showGameView = function(id) {
+  $('#game-view-modal').modal('show');
+}
+
 $(function() {
   $('#send-challenge-button').on('click', function() {
     sendChallenge();
@@ -58,4 +74,14 @@ $(function() {
     e.preventDefault();
     rejectChallenge($(this).attr('data-id'));
   });
+
+  $('body').on('click', '.accept-challenge-button', function(e) {
+    e.preventDefault();
+    acceptChallenge($(this).attr('data-id'));
+  });
+
+  $('body').on('click', '.play-game-button', function(e) {
+    e.preventDefault();
+    showGameView($(this).attr('data-id'));
+  })
 });
