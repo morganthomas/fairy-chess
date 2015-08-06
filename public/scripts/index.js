@@ -15,40 +15,20 @@ var sendChallenge = function() {
   });
 }
 
-var withdrawChallenge = function(id) {
-  $.ajax({
-    url: '/game/withdraw-challenge',
-    type: 'POST',
-    data: { challenge: id },
+var registerChallengeUpdate = function(updateType) {
+  $('body').on('click', '.' + updateType + '-challenge-button', function(e) {
+    e.preventDefault();
 
-    success: function(res) {
-      alert(res);
-    }
-  })
-}
+    $.ajax({
+      url: '/game/' + updateType + '-challenge',
+      type: 'POST',
+      data: { challenge: $(this).attr('data-id') },
 
-var rejectChallenge = function(id) {
-  $.ajax({
-    url: '/game/reject-challenge',
-    type: 'POST',
-    data: { challenge: id },
-
-    success: function(res) {
-      alert(res);
-    }
-  })
-}
-
-var acceptChallenge = function(id) {
-  $.ajax({
-    url: '/game/accept-challenge',
-    type: 'POST',
-    data: { challenge: id },
-
-    success: function(res) {
-      alert(res);
-    }
-  })
+      success: function(res) {
+        alert(res);
+      }
+    });
+  });
 }
 
 var showGameView = function(id) {
@@ -65,20 +45,9 @@ $(function() {
     sendChallenge();
   });
 
-  $('body').on('click', '.withdraw-challenge-button', function(e) {
-    e.preventDefault();
-    withdrawChallenge($(this).attr('data-id'));
-  });
-
-  $('body').on('click', '.reject-challenge-button', function(e) {
-    e.preventDefault();
-    rejectChallenge($(this).attr('data-id'));
-  });
-
-  $('body').on('click', '.accept-challenge-button', function(e) {
-    e.preventDefault();
-    acceptChallenge($(this).attr('data-id'));
-  });
+  registerChallengeUpdate('accept');
+  registerChallengeUpdate('reject');
+  registerChallengeUpdate('withdraw');
 
   $('body').on('click', '.play-game-button', function(e) {
     e.preventDefault();
