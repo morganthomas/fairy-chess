@@ -43,6 +43,8 @@ module.exports = {
       return next();
     }
 
-    res.redirect('/auth/login');
+    if (res.redirect) {
+      res.redirect('/auth/login');
+    }
   }
 };

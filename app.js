@@ -9,7 +9,6 @@ var passport = require('passport');
 var passportConfig = require('./config/passport');
 var indexController = require('./controllers/index');
 var authenticationController = require('./controllers/authentication');
-var gameController = require('./controllers/game');
 
 mongoose.connect('mongodb://localhost/fairychess');
 
@@ -22,11 +21,13 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(flash());
 
-app.use(session({
+var sessionMiddleware = session({
 	secret: 'hairy fairy',
 	resave: false,
 	saveUninitialized: false
-}));
+})
+
+app.use(sessionMiddleware);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -36,10 +37,7 @@ app.post('/auth/login', authenticationController.processLogin);
 app.post('/auth/signup', authenticationController.processSignup);
 app.get('/auth/logout', authenticationController.logout);
 
-app.post('/game/initiate-challenge', gameController.initiateChallenge);
-app.post('/game/withdraw-challenge', gameController.removeChallenge('sender', 'withdrawn'));
-app.post('/game/reject-challenge', gameController.removeChallenge('receiver', 'rejected'));
-app.post('/game/accept-challenge', gameController.acceptChallenge);
+app.get('/templates/:template', indexController.template);
 
 // ***** IMPORTANT ***** //
 // By including this middleware (defined in our config/passport.js module.exports),
@@ -52,3 +50,5 @@ app.get('/', indexController.index);
 var server = app.listen(3000, function() {
 	console.log('Express server listening on port ' + server.address().port);
 });
+
+require('./controllers/game-socket-server')(server, sessionMiddleware);

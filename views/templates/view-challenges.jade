@@ -1,0 +1,30 @@
+div
+  button.btn.btn-warning#initiate-challenge-button(type="button" data-toggle="modal" data-target="#initiate-challenge-modal") Challenge a Friend!
+
+//- h2 Games in Progress
+//- 
+//- ul.list-group
+//-   for challenge in acceptedChallenges
+//-     li.list-group-item
+//-       if challenge.sender._id.equals(challenge.game.players.white)
+//-         div.h4 <strong>#{formatUsername(challenge.sender)}</strong> vs. <strong>#{formatUsername(challenge.receiver)}</strong>
+//-       else
+//-         div.h4 <strong>#{formatUsername(challenge.receiver)}</strong> vs. <strong>#{formatUsername(challenge.sender)}</strong>
+//-       div
+//-         a.btn.btn-success.play-game-button(data-id="#{challenge.game.id}") Play
+
+h2 Open Challenges
+
+ul.list-group
+  li.list-group-item(ng-repeat="challenge in challengeList")
+    div.h4 From <strong>{{challenge.sender}}</strong> to <strong>{{challenge.receiver}}</strong>
+    //- div
+    //-   if challenge.sender.id === user.id
+    //-     a.btn.btn-default.withdraw-challenge-button(data-id="#{challenge.id}") Withdraw
+    //-   else
+    //-     a.btn.btn-success.accept-challenge-button(data-id="#{challenge.id}") Accept
+    //-     span.horizontal-spacer
+    //-     a.btn.btn-danger.reject-challenge-button(data-id="#{challenge.id}") Reject
+                
+  // XXX
+  // h2 Completed Games

@@ -1,0 +1,28 @@
+// XXX
+
+.modal.fade#initiate-challenge-modal
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button(type="button" class="close" data-dismiss="modal" aria-label="Close")
+         span(aria-hidden="true") &times;
+        h4.modal-title Challenge a Friend!
+      .modal-body
+        form#initiate-challenge-form
+          .form-group
+            //- label(for="receiver") Username of friend to challenge
+            input.form-control#initiate-challenge-receiever(name="receiver" placeholder="Username of friend to challenge")
+      .modal-footer
+        button.btn.btn-default(type="button" data-dismiss="modal") Cancel
+        button.btn.btn-warning#send-challenge-button(type="button") Send Challenge!
+
+.modal.fade#game-view-modal
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button(type="button" class="close" data-dismiss="modal" aria-label="Close")
+         span(aria-hidden="true") &times;
+        h4.modal-title Game (XXX)
+      .modal-body
+        p Testing...
+        

@@ -1,3 +1,51 @@
+var chessApp = angular.module('chessApp',
+  ['btford.socket-io', 'ngRoute']);
+
+chessApp.config(function($routeProvider) {
+  $routeProvider
+    .when('/', {
+      templateUrl: '/templates/view-challenges',
+      controller: 'viewChallengesController'
+    })
+    .when('/initiate-challenge', {
+      templateUrl: '/templates/initiate-challenge',
+      controller: 'initiateChallengeController'
+    });
+});
+
+chessApp.factory('socket', function(socketFactory) {
+  return socketFactory();
+});
+
+chessApp.factory('challengeList', function(socket) {
+  var challengeList = [];
+
+  socket.on('create-challenge', function(challenge) {
+    challengeList.unshift(challenge);
+  });
+
+  // XXX
+
+  return challengeList;
+});
+
+chessApp.controller('indexController', function($scope, challengeList) {
+  // Dummy controller to make sure the socket connection gets established.
+});
+
+chessApp.controller('viewChallengesController', function($scope, challengeList) {
+  // XXX
+  $scope.challengeList = challengeList;
+});
+
+chessApp.controller('initiateChallengeController', function($scope, socket) {
+  // XXX
+})
+
+
+
+// XXX
+
 var sendChallenge = function() {
   var challenge = {
     receiver: $('#initiate-challenge-receiever').val()
@@ -34,23 +82,3 @@ var registerChallengeUpdate = function(updateType) {
 var showGameView = function(id) {
   $('#game-view-modal').modal('show');
 }
-
-$(function() {
-  $('#send-challenge-button').on('click', function() {
-    sendChallenge();
-  });
-
-  $('#initiate-challenge-form').on('submit', function(e) {
-    e.preventDefault();
-    sendChallenge();
-  });
-
-  registerChallengeUpdate('accept');
-  registerChallengeUpdate('reject');
-  registerChallengeUpdate('withdraw');
-
-  $('body').on('click', '.play-game-button', function(e) {
-    e.preventDefault();
-    showGameView($(this).attr('data-id'));
-  })
-});

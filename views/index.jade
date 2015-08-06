@@ -4,76 +4,18 @@ block header
   link(rel="stylesheet" href="/stylesheets/index.css")
 
 block content
-  .container.page
+  .container.page(ng-app="chessApp")  
     nav.navbar.navbar-default
       .container-fluid
         .collapse.navbar-collapse
           ul.nav.navbar-nav.navbar-right.auth-controls
-            li <a href="#"><strong>#{user.username}</strong></a>
+            li <a href="#"><strong>XXX</strong></a>
             li <a href="/auth/logout">Logout</a>
 
     h1.page-header Fairy Chess
-      
-    div
-      button.btn.btn-warning#initiate-challenge-button(type="button" data-toggle="modal" data-target="#initiate-challenge-modal") Challenge a Friend!
     
-    if acceptedChallenges.length > 0
-      h2 Games in Progress
-
-      ul.list-group
-        for challenge in acceptedChallenges
-          li.list-group-item
-            if challenge.sender._id.equals(challenge.game.players.white)
-              div.h4 <strong>#{formatUsername(challenge.sender)}</strong> vs. <strong>#{formatUsername(challenge.receiver)}</strong>
-            else
-              div.h4 <strong>#{formatUsername(challenge.receiver)}</strong> vs. <strong>#{formatUsername(challenge.sender)}</strong>
-            div
-              a.btn.btn-success.play-game-button(data-id="#{challenge.game.id}") Play
-    
-    if openChallenges.length > 0
-      h2 Open Challenges
-      
-      ul.list-group
-        for challenge in openChallenges
-            li.list-group-item
-              div.h4 From <strong>#{formatUsername(challenge.sender)}</strong> to <strong>#{formatUsername(challenge.receiver)}</strong>
-              div
-                if challenge.sender.id === user.id
-                  a.btn.btn-default.withdraw-challenge-button(data-id="#{challenge.id}") Withdraw
-                else
-                  a.btn.btn-success.accept-challenge-button(data-id="#{challenge.id}") Accept
-                  span.horizontal-spacer
-                  a.btn.btn-danger.reject-challenge-button(data-id="#{challenge.id}") Reject
-    
-    // XXX
-    // h2 Completed Games
-  
-  .modal.fade#initiate-challenge-modal
-    .modal-dialog
-      .modal-content
-        .modal-header
-          button(type="button" class="close" data-dismiss="modal" aria-label="Close")
-           span(aria-hidden="true") &times;
-          h4.modal-title Challenge a Friend!
-        .modal-body
-          form#initiate-challenge-form
-            .form-group
-              //- label(for="receiver") Username of friend to challenge
-              input.form-control#initiate-challenge-receiever(name="receiver" placeholder="Username of friend to challenge")
-        .modal-footer
-          button.btn.btn-default(type="button" data-dismiss="modal") Cancel
-          button.btn.btn-warning#send-challenge-button(type="button") Send Challenge!
-  
-  .modal.fade#game-view-modal
-    .modal-dialog
-      .modal-content
-        .modal-header
-          button(type="button" class="close" data-dismiss="modal" aria-label="Close")
-           span(aria-hidden="true") &times;
-          h4.modal-title Game (XXX)
-        .modal-body
-          p Testing...
-          
+    div(ng-controller="indexController")
+      div(ng-view)
 
 block scripts
   script(src="/scripts/index.js")

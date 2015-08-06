@@ -18,6 +18,8 @@ var challengeSchema = mongoose.Schema({
   },
   status: {
     type: String,
+    // We say that a challenge is "active" if it is either open or accepted, and
+    // "inactive" otherwise.
     enum: ['open', 'accepted', 'rejected', 'expired', 'withdrawn'],
     required: true,
     default: 'open'
