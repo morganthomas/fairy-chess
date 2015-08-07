@@ -1,9 +1,7 @@
 
 .col-md-8.chess-board-container.noselect
   #chess-board
-    table
-      tr.chess-row(ng-repeat="row in rowNumbers" class="{{rowClasses(row)}}")
-        td.chess-square(ng-repeat="col in colNumbers" class="{{squareClasses(row, col)}}")
+    .chess-square(ng-repeat="loc in boardLocs" class="{{squareClasses(loc)}}")
 
 #chess-dashboard.col-md-4.panel.panel-primary
   .panel-heading <strong>{{game.players.white.username}}</strong> vs. <strong>{{game.players.black.username}}</strong>

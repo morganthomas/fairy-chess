@@ -144,38 +144,32 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
   console.log(game);
 
   // Dummy board
-  var colNumbers = [];
-  for (var i = 0; i < 8; i++) {
-    colNumbers[i] = i;
+  var boardLocs = [];
+  for (var row = 7; row >= 0; row--) {
+    for (var col = 0; col < 8; col++) {
+      boardLocs.push({ row: row, col: col });
+    }
   }
-  var rowNumbers = _.clone(colNumbers).reverse();
 
-  $scope.rowNumbers = rowNumbers;
-  $scope.colNumbers = colNumbers;
+  $scope.boardLocs = boardLocs;
   $scope.game = game;
 
-  $scope.rowClasses = function(row) {
+  $scope.squareClasses = function(loc) {
     var classes = "";
 
-    if (row === 7) {
-      classes += "row-top "
-    } else if (row === 0) {
-      classes += "row-bottom "
-    }
-
-    return classes;
-  }
-
-  $scope.squareClasses = function(row, col) {
-    var classes = "";
-
-    if (col === 0) {
+    if (loc.col === 0) {
       classes += "col-leftmost ";
-    } else if (col === 7) {
+    } else if (loc.col === 7) {
       classes += "col-rightmost ";
     }
 
-    if ((row % 2 === 0 && col % 2 === 0) || (row % 2 === 1 && col % 2 === 1)) {
+    if (loc.row === 7) {
+      classes += "row-top ";
+    } else if (loc.row === 0) {
+      classes += "row-bottom ";
+    }
+
+    if (loc.row % 2 === loc.col % 2) {
       classes += "black-square ";
     } else {
       classes += "white-square ";

@@ -7,7 +7,9 @@
 
 #chess-board {
   margin: auto;
-  width: 562px; /* 25 + 8*64 + 25 */
+  position: relative;
+  overflow: hidden;
+  max-width: 70vmin;
 }
 
 #chess-board table {
@@ -15,10 +17,10 @@
 }
 
 .chess-square {
-  width: 64px;
-  height: 64px;
+  float: left;
   margin: 0;
-  padding: 0;
+  width: 12.5%;
+  padding-bottom: 12.5%;
 }
 
 /* Change LEFT_BORDER_WIDTH_PX in chess-ui.js if you change the width
@@ -31,17 +33,12 @@
   border-right: 1px solid #A3B2BF;
 }
 
-.row-top .chess-square {
+.row-top {
   border-top: 1px solid #A3B2BF;
 }
 
-.row-bottom .chess-square {
+.row-bottom {
   border-bottom: 1px solid #A3B2BF;
-}
-
-.chess-row {
-  margin: 0;
-  padding: 0;
 }
 
 .black-square {
