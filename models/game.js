@@ -13,6 +13,12 @@ var gameSchema = mongoose.Schema({
     required: true
   },
 
+  // The board info. Currently must contain attributes numRows and numCols.
+  boardInfo: {
+    type: Object,
+    required: true
+  },
+
   // A list of all game states that have occurred.
   states: {
     type: Array

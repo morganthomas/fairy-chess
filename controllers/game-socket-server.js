@@ -15,6 +15,11 @@ var newGame = function(player1, player2) {
   return new Game({
     players: players,
     pieceTypes: {}, // XXX
+    // XXX
+    boardInfo: {
+      numRows: 8,
+      numCols: 8
+    },
     states: [], // XXX
     moves: []
   });

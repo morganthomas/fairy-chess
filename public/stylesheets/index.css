@@ -1,3 +1,149 @@
-#game-view-modal .modal-dialog {
-  width: 1000px;
+#chess-board {
+  margin: auto;
+  width: 562px; /* 25 + 8*64 + 25 */
+}
+
+#chess-board table {
+  border-spacing: 0;
+}
+
+.chess-square {
+  width: 64px;
+  height: 64px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Change LEFT_BORDER_WIDTH_PX in chess-ui.js if you change the width
+    of this border. */
+.col-leftmost {
+  border-left: 1px solid #A3B2BF;
+}
+
+.col-rightmost {
+  border-right: 1px solid #A3B2BF;
+}
+
+.row-top .chess-square {
+  border-top: 1px solid #A3B2BF;
+}
+
+.row-bottom .chess-square {
+  border-bottom: 1px solid #A3B2BF;
+}
+
+.chess-row {
+  margin: 0;
+  padding: 0;
+}
+
+.black-square {
+  background-color: #A3B2BF;
+}
+
+.white-square {
+  background-color: white;
+}
+
+.chess-piece {
+  width: 64px;
+  height: 64px;
+}
+
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.noselect:hover {
+  cursor: default;
+}
+
+body {
+  background-color: lightgrey;
+  padding: 0;
+}
+
+.page {
+  background-color: white;
+  padding: 50px;
+  text-align: center;
+  line-height: 100%;
+}
+
+.main-header {
+  text-align: center;
+  /*color: #282828;*/
+  font-family: sans-serif;
+}
+
+#chess-dashboard {
+  /*display: inline-block;*/
+  /*float: right;*/
+  /*width: 300px;*/
+  padding: 0;
+  margin-top: 1em;
+}
+
+.chess-dashboard-subpanel {
+  margin: 20px;
+}
+
+#captured-pieces {
+  min-height: 70px;
+  text-align: left;
+}
+
+.captured-piece {
+  display: inline-block;
+}
+
+.captured-piece img {
+  width: 32px;
+  height: 32px;
+}
+
+#move-record .panel-body {
+  height: 300px;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+}
+
+#move-record-table {
+  /*font-weight: bold;*/
+}
+
+#move-record-table thead th {
+  text-align: center;
+}
+
+.move-being-viewed {
+  background-color: #EEE;
+}
+
+.hypothetical-move {
+  color: #888;
+  /*font-weight: normal;*/
+}
+
+#main-controls {
+  margin-top: 10px;
+}
+
+#main-controls > div {
+  margin-bottom: 5px;
+}
+
+.panel-footer-row-notlast {
+  margin-bottom: 5px;
+}
+
+.player-indicator {
+  width: 16px;
+  height: 16px;
 }

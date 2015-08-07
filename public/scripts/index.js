@@ -137,5 +137,44 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
 
   console.log(game);
 
+  // Dummy board
+  var colNumbers = [];
+  for (var i = 0; i < 8; i++) {
+    colNumbers[i] = i;
+  }
+  var rowNumbers = _.clone(colNumbers).reverse();
+
+  $scope.rowNumbers = rowNumbers;
+  $scope.colNumbers = colNumbers;
   $scope.game = game;
+
+  $scope.rowClasses = function(row) {
+    var classes = "";
+
+    if (row === 7) {
+      classes += "row-top "
+    } else if (row === 0) {
+      classes += "row-bottom "
+    }
+
+    return classes;
+  }
+
+  $scope.squareClasses = function(row, col) {
+    var classes = "";
+
+    if (col === 0) {
+      classes += "col-leftmost ";
+    } else if (col === 7) {
+      classes += "col-rightmost ";
+    }
+
+    if ((row % 2 === 0 && col % 2 === 0) || (row % 2 === 1 && col % 2 === 1)) {
+      classes += "black-square ";
+    } else {
+      classes += "white-square ";
+    }
+
+    return classes;
+  }
 })
