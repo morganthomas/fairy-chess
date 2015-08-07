@@ -84,9 +84,11 @@ chessApp.factory('challengeList', function(socket) {
 
 chessApp.controller('indexController', function($scope, me, challengeList) {
   $scope.me = me;
+  $scope.notAtHome = false;
 });
 
 chessApp.controller('viewChallengesController', function($scope, socket, me, challengeList) {
+  $scope.$parent.notAtHome = false;
   $scope.challengeList = challengeList;
   $scope.me = me;
 
@@ -116,6 +118,8 @@ chessApp.controller('viewChallengesController', function($scope, socket, me, cha
 });
 
 chessApp.controller('initiateChallengeController', function($scope, $location, socket) {
+  $scope.$parent.notAtHome = true;
+
   $scope.sendChallenge = function() {
     socket.emit('create-challenge', $scope.userToChallenge);
     $location.path('/');
@@ -123,6 +127,8 @@ chessApp.controller('initiateChallengeController', function($scope, $location, s
 });
 
 chessApp.controller('playController', function($scope, $routeParams, me, challengeList) {
+  $scope.$parent.notAtHome = true;
+
   var challengeId = $routeParams.id;
   var challenge = _.cloneDeep(_.find(challengeList, function(challenge) {
     return challenge._id === challengeId;

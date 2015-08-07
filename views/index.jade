@@ -8,11 +8,19 @@ block content
     nav.navbar.navbar-default
       .container-fluid
         .collapse.navbar-collapse
+          //- ul.nav.navbar-nav.navbar-left
+          //-   li
+          //-     a(href="#/") Home
           ul.nav.navbar-nav.navbar-right.auth-controls
-            li <a href="#"><strong>{{me.username}}</strong></a>
+            li <a><strong>{{me.username}}</strong></a>
             li <a href="/auth/logout">Logout</a>
 
-    h1.page-header Fairy Chess
+    div
+      div.back-button(ng-show="notAtHome")
+        a.h3(href="#/")
+          i.fa.fa-arrow-left
+          
+      h1.page-header Fairy Chess
     
     div(ng-view)
 
