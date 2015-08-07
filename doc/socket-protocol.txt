@@ -1,6 +1,9 @@
 A socket server is used for all game-related communication between client
 and server.
 
+On connection the server sends a message:
+  you-are <user object>
+
 CHALLENGE PROTOCOL
 
 The server can receive the following messages related to challenges:
@@ -11,5 +14,5 @@ The server can receive the following messages related to challenges:
 The server can send the following messages related to challenges:
   create-challenge { id: <challenge ID>, sender: <sender ID>, receiver: <receiver ID> }
   delete-challenge <challenge ID>
-  challenge-status-change { id: <challenge ID>, status: <new status> }
+  challenge-status-change { id: <challenge ID>, status: <new status>, newGame: <game if a new one was created> }
   challenge-error <error message>

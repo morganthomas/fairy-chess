@@ -4,18 +4,17 @@ block header
   link(rel="stylesheet" href="/stylesheets/index.css")
 
 block content
-  .container.page(ng-app="chessApp")  
+  .container.page(ng-app="chessApp" ng-controller="indexController")  
     nav.navbar.navbar-default
       .container-fluid
         .collapse.navbar-collapse
           ul.nav.navbar-nav.navbar-right.auth-controls
-            li <a href="#"><strong>XXX</strong></a>
+            li <a href="#"><strong>{{me.username}}</strong></a>
             li <a href="/auth/logout">Logout</a>
 
     h1.page-header Fairy Chess
     
-    div(ng-controller="indexController")
-      div(ng-view)
+    div(ng-view)
 
 block scripts
   script(src="/scripts/index.js")

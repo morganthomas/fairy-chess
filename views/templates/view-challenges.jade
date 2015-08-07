@@ -1,30 +1,31 @@
 div
-  button.btn.btn-warning#initiate-challenge-button(type="button" data-toggle="modal" data-target="#initiate-challenge-modal") Challenge a Friend!
+  a.btn.btn-warning#initiate-challenge-button(href="#/initiate-challenge") Challenge a Friend!
 
-//- h2 Games in Progress
-//- 
-//- ul.list-group
-//-   for challenge in acceptedChallenges
-//-     li.list-group-item
-//-       if challenge.sender._id.equals(challenge.game.players.white)
-//-         div.h4 <strong>#{formatUsername(challenge.sender)}</strong> vs. <strong>#{formatUsername(challenge.receiver)}</strong>
-//-       else
-//-         div.h4 <strong>#{formatUsername(challenge.receiver)}</strong> vs. <strong>#{formatUsername(challenge.sender)}</strong>
-//-       div
-//-         a.btn.btn-success.play-game-button(data-id="#{challenge.game.id}") Play
+//- div
+//-   p Me: {{me}}
+//-   p Challenge list: {{challengeList}}
+
+h2 Games in Progress
+
+ul.list-group
+  li.list-group-item(ng-repeat="challenge in challengeList | filter:isAccepted")
+    div.h4
+      span(ng-show="challenge.sender._id === challenge.game.players.white") <strong>{{formatUsername(challenge.sender)}}</strong> vs. <strong>{{formatUsername(challenge.receiver)}}</strong>
+      span(ng-show="challenge.sender._id === challenge.game.players.black") <strong>{{formatUsername(challenge.receiver)}}</strong> vs. <strong>{{formatUsername(challenge.sender)}}</strong
+    div
+      a.btn.btn-success.play-game-button(href="#/play/{{challenge._id}}") Play
 
 h2 Open Challenges
 
 ul.list-group
-  li.list-group-item(ng-repeat="challenge in challengeList")
-    div.h4 From <strong>{{challenge.sender}}</strong> to <strong>{{challenge.receiver}}</strong>
-    //- div
-    //-   if challenge.sender.id === user.id
-    //-     a.btn.btn-default.withdraw-challenge-button(data-id="#{challenge.id}") Withdraw
-    //-   else
-    //-     a.btn.btn-success.accept-challenge-button(data-id="#{challenge.id}") Accept
-    //-     span.horizontal-spacer
-    //-     a.btn.btn-danger.reject-challenge-button(data-id="#{challenge.id}") Reject
+  li.list-group-item(ng-repeat="challenge in challengeList | filter:isOpen")
+    div.h4 From <strong>{{formatUsername(challenge.sender)}}</strong> to <strong>{{formatUsername(challenge.receiver)}}</strong>
+    div(ng-show="isMe(challenge.sender)")
+      button.btn.btn-default.withdraw-challenge-button(ng-click="deleteChallenge(challenge)") Withdraw
+    div(ng-show="isMe(challenge.receiver)")
+      button.btn.btn-success.accept-challenge-button(ng-click="acceptChallenge(challenge)") Accept
+      span.horizontal-spacer
+      button.btn.btn-danger.reject-challenge-button(ng-click="deleteChallenge(challenge)") Reject
                 
   // XXX
   // h2 Completed Games

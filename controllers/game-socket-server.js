@@ -2,6 +2,7 @@ var User = require('../models/user');
 var Challenge = require('../models/challenge');
 var Game = require('../models/game');
 var _ = require('../public/scripts/lodash');
+var passport = require('passport');
 
 // Constructs a new Game object, with the two specified players (given as user IDs),
 // who are randomly selected to be black and white.
@@ -19,6 +20,16 @@ var newGame = function(player1, player2) {
   });
 }
 
+// Emits the given message to the given users, if they are connected. Takes the
+// array of connections and an array of user ID hex strings.
+var emitToUsers = function(connections, users, messageType, messageBody) {
+  users.forEach(function(userId) {
+    if (connections[userId]) {
+      connections[userId].emit(messageType, messageBody);
+    }
+  })
+}
+
 var gameSocketServer = function(httpServer, sessionMiddleware) {
   var io = require('socket.io')(httpServer);
 
@@ -26,37 +37,49 @@ var gameSocketServer = function(httpServer, sessionMiddleware) {
     sessionMiddleware(socket.request, {}, next);
   });
 
+  // A map from user IDs to connections.
+  var connections = {};
+
   io.on('connection', function(socket) {
     // XXX: Look up the user
     var userId = socket.request.session && socket.request.session.passport && socket.request.session.passport.user;
-    var user = { id: userId }
 
     if (!userId) {
       return;
     }
 
-    socket.on('create-challenge', function(receiverUsername) {
-      createChallenge(socket, user, receieverUsername);
-    });
+    passport.deserializeUser(userId, function(err, user) {
+      if (err) {
+        return; // XXX
+      }
 
-    socket.on('delete-challenge', function(challengeId) {
-      deleteChallenge(socket, user, challengeId);
-    });
+      connections[user.id] = socket;
 
-    socket.on('accept-challenge', function(challengeId) {
-      acceptChallenge(socket, user, challengeId);
-    });
+      socket.on('create-challenge', function(receiverUsername) {
+        createChallenge(connections, socket, user, receiverUsername);
+      });
 
-    sendInitialState(socket, user);
+      socket.on('delete-challenge', function(challengeId) {
+        deleteChallenge(connections, socket, user, challengeId);
+      });
+
+      socket.on('accept-challenge', function(challengeId) {
+        acceptChallenge(connections, socket, user, challengeId);
+      });
+
+      sendInitialState(socket, user);
+    })
   });
 }
 
 var sendInitialState = function(socket, user) {
+  socket.emit('you-are', user);
+
   Challenge.find({
     $and: [{$or: [ { receiver: user.id }, { sender: user.id } ]},
            { status: { $in: ['open', 'accepted'] } }]
     })
-    .populate('receiver sender')
+    .populate('receiver sender game')
     .exec(function(err, challenges) {
       if (err) {
         return socket.emit('challenge-error', "Database error finding challenges.");
@@ -72,7 +95,7 @@ var sendInitialState = function(socket, user) {
     });
 }
 
-var createChallenge = function(socket, sender, receiverUsername) {
+var createChallenge = function(connections, socket, sender, receiverUsername) {
   User.findOne({ username: receiverUsername }, function(err, receiver) {
     if (err) {
       return socket.emit('challenge-error', "Database error.");
@@ -91,7 +114,12 @@ var createChallenge = function(socket, sender, receiverUsername) {
           if (err) {
             return socket.emit('challenge-error', "Database error.");
           } else {
-            return socket.emit('new-challenge', { sender: sender.id, receiver: receiver.id });
+            // Populate the sender and receiever fields of the challenge
+            challenge.sender = sender;
+            challenge.receiver = receiver;
+
+            emitToUsers(connections, [challenge.sender.id, challenge.receiver.id],
+              'create-challenge', challenge);
           }
         });
       }
@@ -101,7 +129,7 @@ var createChallenge = function(socket, sender, receiverUsername) {
 
 // A function for both withdrawing and rejecting challenges.
 // Takes an argument saying who can do this, and the status that results.
-var deleteChallenge = function(socket, user, challengeId) {
+var deleteChallenge = function(connections, socket, user, challengeId) {
   Challenge.findById(challengeId, function(err, challenge) {
     if (err) {
       return socket.emit('challenge-error', "Database error.");
@@ -119,13 +147,14 @@ var deleteChallenge = function(socket, user, challengeId) {
           return socket.emit('challenge-error', "Database error.");
         }
 
-        return socket.emit('delete-challenge', challenge.id);
+        emitToUsers(connections, [challenge.sender.toString(), challenge.receiver.toString()],
+          'delete-challenge', challenge.id);
       });
     }
   });
 }
 
-var acceptChallenge = function(socket, user, challengeId) {
+var acceptChallenge = function(connections, socket, user, challengeId) {
   Challenge.findById(challengeId, function(err, challenge) {
     if (err) {
       return socket.emit('challenge-error', "Database error.");
@@ -151,7 +180,8 @@ var acceptChallenge = function(socket, user, challengeId) {
             return socket.emit('challenge-error', "Database error.");
           }
 
-          return socket.emit('challenge-status-change', { id: challenge.id, status: 'accepted' });
+          emitToUsers(connections, [challenge.sender.toString(), challenge.receiver.toString()],
+            'challenge-status-change', { id: challenge.id, status: 'accepted', newGame: game });
         });
       });
     }
