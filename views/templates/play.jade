@@ -1,7 +1,12 @@
+p {{pieceLoc}}
 
 .col-md-8.chess-board-container.noselect
   #chess-board
     .chess-square(ng-repeat="loc in boardLocs" class="{{squareClasses(loc)}}")
+      div.chess-square-target(data-drop="true" data-jqyoui-options jqyoui-droppable="{onOver: dummyDrop({{loc}})}")
+      img.chess-piece(ng-if="dummyShowPiece(loc)" src="/Images/WhitePawn.png"
+        data-drag="true" data-jqyoui-options="{revert: 'invalid'}"
+        jqyoui-draggable="{animate:true}")
 
 #chess-dashboard.col-md-4.panel.panel-primary
   .panel-heading <strong>{{game.players.white.username}}</strong> vs. <strong>{{game.players.black.username}}</strong>

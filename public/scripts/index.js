@@ -12,7 +12,7 @@ var filterInPlace = function(array, pred) {
 }
 
 var chessApp = angular.module('chessApp',
-  ['btford.socket-io', 'ngRoute']);
+  ['btford.socket-io', 'ngRoute', 'ngDragDrop']);
 
 chessApp.config(function($routeProvider) {
   $routeProvider
@@ -176,5 +176,15 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
     }
 
     return classes;
+  }
+
+  $scope.pieceLoc = { row: 0, col: 0 }
+  $scope.dummyShowPiece = function(loc) {
+    return loc.row === $scope.pieceLoc.row && loc.col === $scope.pieceLoc.col;
+  };
+
+  $scope.dummyDrop = function(loc) {
+    console.log("drop", loc)
+    $scope.pieceLoc = loc;
   }
 })
