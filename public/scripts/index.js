@@ -157,6 +157,10 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
   $scope.squareClasses = function(loc) {
     var classes = "";
 
+    if (loc.col === 0 && loc.row === 7) {
+      classes += "chess-board-origin ";
+    }
+
     if (loc.col === 0) {
       classes += "col-leftmost ";
     } else if (loc.col === 7) {
@@ -177,4 +181,7 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
 
     return classes;
   }
+
+  // XXX: Temporary hack
+  setTimeout(setupBoard, 1000);
 })

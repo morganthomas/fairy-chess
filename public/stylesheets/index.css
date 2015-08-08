@@ -21,6 +21,7 @@
   margin: 0;
   width: 12.5%;
   padding-bottom: 12.5%;
+  position: relative;
 }
 
 /* Change LEFT_BORDER_WIDTH_PX in chess-ui.js if you change the width
@@ -50,8 +51,15 @@
 }
 
 .chess-piece {
-  width: 64px;
-  height: 64px;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.chess-piece img {
+  width: 100%;
+  height: 100%;
 }
 
 .noselect {
