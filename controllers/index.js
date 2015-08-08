@@ -1,5 +1,6 @@
 var Challenge = require('../models/challenge');
 var Game = require('../models/game');
+var fs = require('fs');
 
 var indexController = {
 	index: function(req, res) {

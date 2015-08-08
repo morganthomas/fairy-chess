@@ -1,6 +1,7 @@
+p {{game}}
 
 .col-md-8.chess-board-container.noselect
-  #chess-board
+  #chess-board(ng-controller="chessBoardController")
     .chess-square(ng-repeat="loc in boardLocs" class="{{squareClasses(loc)}}")
 
 #chess-dashboard.col-md-4.panel.panel-primary

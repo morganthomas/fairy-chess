@@ -38,7 +38,6 @@ app.post('/auth/signup', authenticationController.processSignup);
 app.get('/auth/logout', authenticationController.logout);
 
 app.get('/templates/:template', indexController.template);
-
 // ***** IMPORTANT ***** //
 // By including this middleware (defined in our config/passport.js module.exports),
 // We can prevent unauthorized access to any route handler defined after this call

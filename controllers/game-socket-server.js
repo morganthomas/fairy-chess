@@ -1,28 +1,14 @@
 var User = require('../models/user');
 var Challenge = require('../models/challenge');
 var Game = require('../models/game');
-var _ = require('../public/scripts/lodash');
+var _ = require('../public/scripts/lib/lodash');
 var passport = require('passport');
+var chess = require('../public/scripts/chess-logic.js');
 
 // Constructs a new Game object, with the two specified players (given as user IDs),
 // who are randomly selected to be black and white.
 var newGame = function(player1, player2) {
-  var shuffledPlayers = _.shuffle([player1, player2]);
-  var players = {};
-  players.white = shuffledPlayers[0];
-  players.black = shuffledPlayers[1];
-
-  return new Game({
-    players: players,
-    pieceTypes: {}, // XXX
-    // XXX
-    boardInfo: {
-      numRows: 8,
-      numCols: 8
-    },
-    states: [], // XXX
-    moves: []
-  });
+  return new Game(chess.generateGame(player1, player2));
 }
 
 // Emits the given message to the given users, if they are connected. Takes the

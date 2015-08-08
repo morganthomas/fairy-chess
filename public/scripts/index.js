@@ -11,25 +11,6 @@ var filterInPlace = function(array, pred) {
   }
 }
 
-var chessApp = angular.module('chessApp',
-  ['btford.socket-io', 'ngRoute']);
-
-chessApp.config(function($routeProvider) {
-  $routeProvider
-    .when('/', {
-      templateUrl: '/templates/view-challenges',
-      controller: 'viewChallengesController'
-    })
-    .when('/initiate-challenge', {
-      templateUrl: '/templates/initiate-challenge',
-      controller: 'initiateChallengeController'
-    }).
-    when('/play/:id', {
-      templateUrl: '/templates/play',
-      controller: 'playController'
-    });
-});
-
 chessApp.factory('socket', function(socketFactory) {
   return socketFactory();
 });
@@ -181,7 +162,4 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
 
     return classes;
   }
-
-  // XXX: Temporary hack
-  setTimeout(setupBoard, 1000);
 })

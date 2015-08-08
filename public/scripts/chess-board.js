@@ -3,8 +3,22 @@
 // The size of the left border of the chess squares.
 var LEFT_BORDER_WIDTH_PX = 1;
 
+function displayState(game) {
+  var state = getCurrentState(game);
+
+  $(".chess-piece").remove();
+
+  forEachLoc(state.board, function(loc) {
+    var piece = getSquare(state.board, loc);
+    if (piece) {
+      displayPiece(loc, piece);
+    }
+  });
+}
+
 // Gives the filename of the image for the given piece.
 function pieceImageName(piece) {
+  // XXX
   return "images/WhitePawn.png";
 }
 
@@ -43,13 +57,11 @@ var getSquareSize = function() {
   return $(".chess-board-origin").innerWidth();
 }
 
-var setupBoard = function() {
+chessApp.controller('chessBoardController', function($scope) {
+  var game = $scope.$parent.game;
   var processingPieceDrag = false;
   var dragStartLoc = null;
   var pieceBeingDragged = null;
-
-  var dummyPiece = {};
-  var dummyPieceLoc = { row: 0, col: 0 }
 
   var resetDragState = function() {
     processingPieceDrag = false;
@@ -59,8 +71,7 @@ var setupBoard = function() {
   };
 
   var refreshDisplay = function() {
-    $(".chess-piece").remove();
-    displayPiece(dummyPieceLoc, dummyPiece);
+    displayState(game);
   };
 
   // Returns the CSS for the position of a piece being dragged, given the
@@ -93,7 +104,15 @@ var setupBoard = function() {
   var mouseupHandler = function(upEvent) {
     if (processingPieceDrag) {
       endLoc = mouseToLoc(upEvent.pageX, upEvent.pageY);
-      dummyPieceLoc = endLoc; // XXX: Unchecked
+      var state = getCurrentState(game);
+
+      // XXX: Dummy code
+      $scope.$apply(function() {
+        var piece = getSquare(state.board, dragStartLoc);
+        setSquare(state.board, dragStartLoc, null);
+        setSquare(state.board, endLoc, piece);
+      })
+
       // var state = game.getStateBeingViewed();
 
       // var move = createMove(state, dragStartLoc, endLoc, null);
@@ -113,10 +132,16 @@ var setupBoard = function() {
     }
   };
 
-  $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
-  $('body').on('mousemove', mousemoveHandler);
-  $("#chess-board").on("mouseup", mouseupHandler);
-  $(window).on('resize', refreshDisplay);
+  // XXX: timeout hack
+  setTimeout(function() {
+    $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
+    $('body').on('mousemove', mousemoveHandler);
+    $("#chess-board").on("mouseup", mouseupHandler);
+    $(window).on('resize', refreshDisplay);
 
-  refreshDisplay();
+    refreshDisplay();
+  }, 1000);
+})
+
+var setupBoard = function(game) {
 };
