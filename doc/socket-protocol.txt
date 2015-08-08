@@ -16,3 +16,20 @@ The server can send the following messages related to challenges:
   delete-challenge <challenge ID>
   challenge-status-change { id: <challenge ID>, status: <new status>, newGame: <game if a new one was created> }
   challenge-error <error message>
+
+GAME PROTOCOL
+
+The following message gets sent under various circumstances:
+  move { game: <game ID>, move: <move>, index: <index of move in move log> }
+
+This message means that a player made the given move in the given
+game. The client sends this when they are attempting to make a move. If the server
+accepts their move, it sends the same message to both players. The sender
+will in fact ignore this message and update its state immediately upon sending
+the message.
+
+The server sends this message to a client if it rejects their move:
+  move-rejected { game: <game ID>, move: <move> }
+
+This should be impossible with proper use of the client, since the client checks
+that moves are legal before sending them. It is intended for debugging purposes.

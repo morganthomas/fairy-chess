@@ -11,6 +11,35 @@ var filterInPlace = function(array, pred) {
   }
 }
 
+// Gives the CSS classes for a square, based on its location.
+var squareClasses = function(loc) {
+  var classes = "";
+
+  if (loc.col === 0 && loc.row === 7) {
+    classes += "chess-board-origin ";
+  }
+
+  if (loc.col === 0) {
+    classes += "col-leftmost ";
+  } else if (loc.col === 7) {
+    classes += "col-rightmost ";
+  }
+
+  if (loc.row === 7) {
+    classes += "row-top ";
+  } else if (loc.row === 0) {
+    classes += "row-bottom ";
+  }
+
+  if (loc.row % 2 === loc.col % 2) {
+    classes += "black-square ";
+  } else {
+    classes += "white-square ";
+  }
+
+  return classes;
+};
+
 chessApp.factory('socket', function(socketFactory) {
   return socketFactory();
 });
@@ -122,44 +151,7 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
   game.players.white = players[whitePlayer];
   game.players.black = players[1 - whitePlayer];
 
-  console.log(game);
-
-  // Dummy board
-  var boardLocs = [];
-  for (var row = 7; row >= 0; row--) {
-    for (var col = 0; col < 8; col++) {
-      boardLocs.push({ row: row, col: col });
-    }
-  }
-
-  $scope.boardLocs = boardLocs;
   $scope.game = game;
 
-  $scope.squareClasses = function(loc) {
-    var classes = "";
-
-    if (loc.col === 0 && loc.row === 7) {
-      classes += "chess-board-origin ";
-    }
-
-    if (loc.col === 0) {
-      classes += "col-leftmost ";
-    } else if (loc.col === 7) {
-      classes += "col-rightmost ";
-    }
-
-    if (loc.row === 7) {
-      classes += "row-top ";
-    } else if (loc.row === 0) {
-      classes += "row-bottom ";
-    }
-
-    if (loc.row % 2 === loc.col % 2) {
-      classes += "black-square ";
-    } else {
-      classes += "white-square ";
-    }
-
-    return classes;
-  }
+  $scope.squareClasses = squareClasses;
 })
