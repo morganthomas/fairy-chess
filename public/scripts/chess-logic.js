@@ -10,6 +10,15 @@ var setSquare = function(board, loc, val) {
   board[loc.row][loc.col] = val;
 }
 
+// Calls the given function on each location in the given board.
+var forEachLoc = function(board, callback) {
+  for (var row = 0; row < board.length; row++) {
+    for (var col = 0; col < board[row].length; col++) {
+      callback({ row: row, col: col });
+    }
+  }
+}
+
 // XXX
 var makeInitialState = function(pieceTypes, boardInfo) {
   var board = [];
@@ -37,7 +46,11 @@ var makeInitialState = function(pieceTypes, boardInfo) {
 }
 
 var getCurrentState = function(game) {
-  return game.states[game.states.length - 1];
+  return game.states[getCurrentStateIndex(game)];
+}
+
+var getCurrentStateIndex = function(game) {
+  return game.states.length - 1;
 }
 
 // Returns a new game object, given the two players.
@@ -65,17 +78,34 @@ var generateGame = function(player1, player2) {
   };
 }
 
-// Calls the given function on each location in the given board.
-var forEachLoc = function(board, callback) {
-  for (var row = 0; row < board.length; row++) {
-    for (var col = 0; col < board[row].length; col++) {
-      callback({ row: row, col: col });
-    }
+// Given a game and a move (which is assumed to be legal), performs the move
+// and updates the game accordingly.
+var executeMove = function(game, move) {
+  if (move.template === 'dummy') {
+    var state = getCurrentState(game);
+    var newState = _.cloneDeep(state);
+    var newPiece = _.clone(getSquare(state.board, move.params.from));
+    setSquare(newState.board, move.params.from, null);
+    setSquare(newState.board, move.params.to, newPiece);
+    game.states.push(newState);
+    game.moves.push(move);
   }
 }
 
+// Given a game and a move, says whether the move is legal in the current state.
+var moveIsLegal = function(game, move) {
+  // XXX
+  return true;
+}
+
+//
+// Node exports
+//
+
 if (typeof window === 'undefined') {
   module.exports = {
-    generateGame: generateGame
+    generateGame: generateGame,
+    moveIsLegal: moveIsLegal,
+    executeMove: executeMove
   };
 }

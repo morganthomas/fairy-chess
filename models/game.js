@@ -3,20 +3,17 @@ var mongoose = require('mongoose');
 var gameSchema = mongoose.Schema({
   // A map from the keys white and black to the players' IDs
   players: {
-    type: Object,
-    required: true
+    type: Object
   },
 
   // A map from piece type names to serial-friendlyized piece types.
   pieceTypes: {
-    type: Object,
-    required: true
+    type: Object
   },
 
   // The board info. Currently must contain attributes numRows and numCols.
   boardInfo: {
-    type: Object,
-    required: true
+    type: Object
   },
 
   // A list of all game states that have occurred.

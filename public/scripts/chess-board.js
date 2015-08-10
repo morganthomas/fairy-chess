@@ -57,11 +57,20 @@ var getSquareSize = function() {
   return $(".chess-board-origin").innerWidth();
 }
 
-chessApp.controller('chessBoardController', function($scope) {
+chessApp.controller('chessBoardController', function($scope, challengeList) {
   var game = $scope.$parent.game;
   var processingPieceDrag = false;
   var dragStartLoc = null;
   var pieceBeingDragged = null;
+
+  $scope.boardLocs = [];
+  for (var row = game.boardInfo.numRows - 1; row >= 0; row--) {
+    for (var col = 0; col < game.boardInfo.numCols; col++) {
+      $scope.boardLocs.push({ row: row, col: col })
+    }
+  }
+
+  $scope.squareClasses = squareClasses;
 
   var resetDragState = function() {
     processingPieceDrag = false;
@@ -108,18 +117,8 @@ chessApp.controller('chessBoardController', function($scope) {
 
       // XXX: Dummy code
       $scope.$apply(function() {
-        var piece = getSquare(state.board, dragStartLoc);
-        setSquare(state.board, dragStartLoc, null);
-        setSquare(state.board, endLoc, piece);
-      })
-
-      // var state = game.getStateBeingViewed();
-
-      // var move = createMove(state, dragStartLoc, endLoc, null);
-
-      // if (move) {
-        // game.performMove(move);
-      // }
+        $scope.$parent.performMove(dragStartLoc, endLoc);
+      });
 
       refreshDisplay();
       resetDragState();
@@ -132,6 +131,10 @@ chessApp.controller('chessBoardController', function($scope) {
     }
   };
 
+  $scope.$on('move', function(event, data) {
+    refreshDisplay();
+  });
+
   // XXX: timeout hack
   setTimeout(function() {
     $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
@@ -143,5 +146,31 @@ chessApp.controller('chessBoardController', function($scope) {
   }, 1000);
 })
 
-var setupBoard = function(game) {
+// Gives the CSS classes for a square, based on its location.
+var squareClasses = function(loc) {
+  var classes = "";
+
+  if (loc.col === 0 && loc.row === 7) {
+    classes += "chess-board-origin ";
+  }
+
+  if (loc.col === 0) {
+    classes += "col-leftmost ";
+  } else if (loc.col === 7) {
+    classes += "col-rightmost ";
+  }
+
+  if (loc.row === 7) {
+    classes += "row-top ";
+  } else if (loc.row === 0) {
+    classes += "row-bottom ";
+  }
+
+  if (loc.row % 2 === loc.col % 2) {
+    classes += "black-square ";
+  } else {
+    classes += "white-square ";
+  }
+
+  return classes;
 };

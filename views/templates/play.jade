@@ -1,11 +1,9 @@
-p {{game}}
-
 .col-md-8.chess-board-container.noselect
   #chess-board(ng-controller="chessBoardController")
     .chess-square(ng-repeat="loc in boardLocs" class="{{squareClasses(loc)}}")
 
 #chess-dashboard.col-md-4.panel.panel-primary
-  .panel-heading <strong>{{game.players.white.username}}</strong> vs. <strong>{{game.players.black.username}}</strong>
+  .panel-heading <strong>{{players.white.username}}</strong> vs. <strong>{{players.black.username}}</strong>
   #captured-pieces.chess-dashboard-subpanel.panel.panel-primary
   div
   #move-record.chess-dashboard-subpanel.panel.panel-primary

@@ -11,35 +11,6 @@ var filterInPlace = function(array, pred) {
   }
 }
 
-// Gives the CSS classes for a square, based on its location.
-var squareClasses = function(loc) {
-  var classes = "";
-
-  if (loc.col === 0 && loc.row === 7) {
-    classes += "chess-board-origin ";
-  }
-
-  if (loc.col === 0) {
-    classes += "col-leftmost ";
-  } else if (loc.col === 7) {
-    classes += "col-rightmost ";
-  }
-
-  if (loc.row === 7) {
-    classes += "row-top ";
-  } else if (loc.row === 0) {
-    classes += "row-bottom ";
-  }
-
-  if (loc.row % 2 === loc.col % 2) {
-    classes += "black-square ";
-  } else {
-    classes += "white-square ";
-  }
-
-  return classes;
-};
-
 chessApp.factory('socket', function(socketFactory) {
   return socketFactory();
 });
@@ -57,7 +28,7 @@ chessApp.factory('me', function(socket) {
 
 // The challenge list contains all challenges which are not deleted
 // (rejected or withdrawn).
-chessApp.factory('challengeList', function(socket) {
+chessApp.factory('challengeList', function(socket, $rootScope) {
   var challengeList = [];
 
   socket.on('create-challenge', function(challenge) {
@@ -85,6 +56,23 @@ chessApp.factory('challengeList', function(socket) {
         }
       }
     }
+  });
+
+  socket.on('move', function(data) {
+    console.log("move", data)
+
+    for (var i = 0; i < challengeList.length; i++) {
+      var game = challengeList[i].game;
+      if (game._id === data.game &&
+            getCurrentStateIndex(game) < data.index) {
+        executeMove(game, data.move);
+        $rootScope.$broadcast('move', {move : game.moves.length});
+      }
+    }
+  });
+
+  socket.on('move-rejected', function(data) {
+    console.log('move-rejected', data);
   });
 
   // XXX
@@ -136,22 +124,48 @@ chessApp.controller('initiateChallengeController', function($scope, $location, s
   }
 });
 
-chessApp.controller('playController', function($scope, $routeParams, me, challengeList) {
+chessApp.controller('playController', function($scope, $routeParams, me, challengeList, socket) {
   $scope.$parent.notAtHome = true;
 
   var challengeId = $routeParams.id;
-  var challenge = _.cloneDeep(_.find(challengeList, function(challenge) {
+  var challenge = _.find(challengeList, function(challenge) {
     return challenge._id === challengeId;
-  }));
+  });
   var game = challenge.game;
 
-  // Populate the players.white and players.black fields.
+  // Find the white and black players so we know their usernames in the view.
+  // The game object just includes the player IDs.
+  $scope.players = {};
   var players = [challenge.sender, challenge.receiver];
   var whitePlayer = challenge.sender._id === game.players.white ? 0 : 1;
-  game.players.white = players[whitePlayer];
-  game.players.black = players[1 - whitePlayer];
+  $scope.players.white = players[whitePlayer];
+  $scope.players.black = players[1 - whitePlayer];
 
   $scope.game = game;
 
   $scope.squareClasses = squareClasses;
+
+  // Checks if a move from startLoc to endLoc is legal. If so, updates the
+  // game state to reflect the move and sends the move to the server.
+  $scope.performMove = function(startLoc, endLoc) {
+    var move = {
+      template: 'dummy',
+      params: {
+        from: startLoc,
+        to: endLoc
+      }
+    };
+
+    executeMove(game, move);
+
+    socket.emit('move', {
+      game: game._id,
+      move: move,
+      index: getCurrentStateIndex(game)
+    });
+  }
+
+  $scope.numMoves = function() {
+    return game.moves.length;
+  }
 })

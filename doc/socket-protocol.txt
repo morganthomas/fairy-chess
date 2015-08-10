@@ -19,7 +19,7 @@ The server can send the following messages related to challenges:
 
 GAME PROTOCOL
 
-The following message gets sent under various circumstances:
+Both client and server can send this message:
   move { game: <game ID>, move: <move>, index: <index of move in move log> }
 
 This message means that a player made the given move in the given
@@ -29,7 +29,7 @@ will in fact ignore this message and update its state immediately upon sending
 the message.
 
 The server sends this message to a client if it rejects their move:
-  move-rejected { game: <game ID>, move: <move> }
+  move-rejected { game: <game ID>, move: <move>, why: <message> }
 
 This should be impossible with proper use of the client, since the client checks
 that moves are legal before sending them. It is intended for debugging purposes.
