@@ -3,7 +3,7 @@ var Challenge = require('../models/challenge');
 var Game = require('../models/game');
 var _ = require('../public/scripts/lib/lodash');
 var passport = require('passport');
-var chess = require('../public/scripts/chess-logic.js');
+var chess = require('../public/scripts/chess/chess.js');
 
 // Constructs a new Game object, with the two specified players (given as user IDs),
 // who are randomly selected to be black and white.

@@ -1,3 +1,6 @@
+// The chess board is written in jQuery. I tried using a drag and drop library
+// for Angular, but I couldn't get it to work and it was slow.
+
 // The size of the left border of the chess squares.
 var LEFT_BORDER_WIDTH_PX = 1;
 
