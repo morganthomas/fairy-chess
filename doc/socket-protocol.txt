@@ -17,6 +17,11 @@ The server can send the following messages related to challenges:
   challenge-status-change { id: <challenge ID>, status: <new status>, newGame: <game if a new one was created> }
   challenge-error <error message>
 
+On connection, the server sends a bunch of create-challenge and challenge-status-change
+messages to tell the client about all of their active challenges. When this is
+done, the server sends:
+   active-challenges-loaded
+
 GAME PROTOCOL
 
 Both client and server can send this message:

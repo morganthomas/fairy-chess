@@ -115,6 +115,8 @@ var sendInitialState = function(socket, user) {
         }
       });
     });
+
+  socket.emit('active-challenges-loaded');
 }
 
 var createChallenge = function(connections, socket, sender, receiverUsername) {

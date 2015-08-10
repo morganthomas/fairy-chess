@@ -1,11 +1,4 @@
 ///////////////////////////////////////////////////////////////////////////////
-//
-// This file contains the public interface to the chess logic engine. The Node
-// exports at the end of the file describe this interface.
-//
-///////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
 // Node imports
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -119,10 +112,6 @@ var moveIsLegal = function(game, move) {
 
 if (typeof window === 'undefined') {
   module.exports = {
-    getSquare: getSquare,
-    setSquare: setSquare,
-    forEachLoc: forEachLoc,
-    getCurrentState: getCurrentState,
     generateGame: generateGame,
     moveIsLegal: moveIsLegal,
     executeMove: executeMove

@@ -16,6 +16,10 @@ var filterInPlace = function(array, pred) {
 chessApp.factory('challengeList', function(socket, $rootScope) {
   var challengeList = [];
 
+  // This attribute says whether the challenge list has had all existing
+  // challenges loaded into it.
+  challengeList.initialized = false;
+
   socket.on('create-challenge', function(challenge) {
     challengeList.unshift(challenge);
   });
@@ -42,6 +46,11 @@ chessApp.factory('challengeList', function(socket, $rootScope) {
     }
   });
 
+  socket.on('active-challenges-loaded', function() {
+    challengeList.initialized = true;
+    $rootScope.$broadcast('active-challenges-loaded');
+  })
+
   socket.on('move', function(data) {
     console.log("move", data)
 
@@ -61,3 +70,13 @@ chessApp.factory('challengeList', function(socket, $rootScope) {
 
   return challengeList;
 });
+
+// This function runs the given callback when the challenge list is initialized.
+// Requires a scope and the challenge list as parameter.
+var whenActiveChallengesLoaded = function($scope, challengeList, cb) {
+  if (challengeList.initialized) {
+    cb();
+  } else {
+    $scope.on('active-challenges-loaded', cb);
+  }
+}

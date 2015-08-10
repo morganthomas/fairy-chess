@@ -112,18 +112,11 @@ chessApp.directive( 'elemReady', function( $parse, $timeout ) {
     }
 });
 
-chessApp.controller('chessBoardController', function($scope) {
-  var game = $scope.$parent.game;
+chessApp.controller('chessBoardController', function($scope, challengeList) {
+  var game = null;
   var processingPieceDrag = false;
   var dragStartLoc = null;
   var pieceBeingDragged = null;
-
-  $scope.boardLocs = [];
-  for (var row = game.boardInfo.numRows - 1; row >= 0; row--) {
-    for (var col = 0; col < game.boardInfo.numCols; col++) {
-      $scope.boardLocs.push({ row: row, col: col })
-    }
-  }
 
   $scope.squareClasses = squareClasses;
 
@@ -192,20 +185,32 @@ chessApp.controller('chessBoardController', function($scope) {
     refreshDisplay();
   });
 
-  // This handler gets called by the elem-ready directive on the chess board
-  // when the chess board is finished rendering. It might be called more than once,
-  // is why we need the eventsRegistered variable to avoid doubly registering the
-  // event handlers.
-  var eventsRegistered = false;
-  $scope.ready = function() {
-    if (!eventsRegistered) {
-      $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
-      $('body').on('mousemove', mousemoveHandler);
-      $("#chess-board").on("mouseup", mouseupHandler);
-      $(window).on('resize', refreshDisplay);
-      eventsRegistered = true;
+  whenActiveChallengesLoaded($scope, challengeList, function() {
+    game = $scope.$parent.game;
+
+    $scope.boardLocs = [];
+    for (var row = game.boardInfo.numRows - 1; row >= 0; row--) {
+      for (var col = 0; col < game.boardInfo.numCols; col++) {
+        $scope.boardLocs.push({ row: row, col: col })
+      }
     }
 
-    refreshDisplay();
-  };
+    // This handler gets called by the elem-ready directive on the chess board
+    // when the chess board is finished rendering. It might be called more than once,
+    // is why we need the eventsRegistered variable to avoid doubly registering the
+    // event handlers.
+    var eventsRegistered = false;
+
+    $scope.ready = function() {
+      if (!eventsRegistered) {
+        $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
+        $('body').on('mousemove', mousemoveHandler);
+        $("#chess-board").on("mouseup", mouseupHandler);
+        $(window).on('resize', refreshDisplay);
+        eventsRegistered = true;
+      }
+
+      refreshDisplay();
+    };
+  });
 })

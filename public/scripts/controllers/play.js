@@ -1,22 +1,5 @@
 chessApp.controller('playController', function($scope, $routeParams, me, challengeList, socket) {
   $scope.$parent.notAtHome = true;
-
-  var challengeId = $routeParams.id;
-  var challenge = _.find(challengeList, function(challenge) {
-    return challenge._id === challengeId;
-  });
-  var game = challenge.game;
-
-  // Find the white and black players so we know their usernames in the view.
-  // The game object just includes the player IDs.
-  $scope.players = {};
-  var players = [challenge.sender, challenge.receiver];
-  var whitePlayer = challenge.sender._id === game.players.white ? 0 : 1;
-  $scope.players.white = players[whitePlayer];
-  $scope.players.black = players[1 - whitePlayer];
-
-  $scope.game = game;
-
   $scope.squareClasses = squareClasses;
 
   // Checks if a move from startLoc to endLoc is legal. If so, updates the
@@ -30,16 +13,28 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
       }
     };
 
-    executeMove(game, move);
+    executeMove($scope.game, move);
 
     socket.emit('move', {
-      game: game._id,
+      game: $scope.game._id,
       move: move,
-      index: getCurrentStateIndex(game)
+      index: getCurrentStateIndex($scope.game)
     });
   }
 
-  $scope.numMoves = function() {
-    return game.moves.length;
-  }
+  whenActiveChallengesLoaded($scope, challengeList, function() {
+    var challengeId = $routeParams.id;
+    var challenge = _.find(challengeList, function(challenge) {
+      return challenge._id === challengeId;
+    });
+    $scope.game = challenge.game;
+
+    // Find the white and black players so we know their usernames in the view.
+    // The game object just includes the player IDs.
+    $scope.players = {};
+    var players = [challenge.sender, challenge.receiver];
+    var whitePlayer = challenge.sender._id === $scope.game.players.white ? 0 : 1;
+    $scope.players.white = players[whitePlayer];
+    $scope.players.black = players[1 - whitePlayer];
+  });
 })
