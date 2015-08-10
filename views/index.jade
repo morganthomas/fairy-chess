@@ -25,8 +25,12 @@ block content
     div(ng-view)
 
 block scripts
-  script(src="/scripts/app.js")
-  script(src="/scripts/index.js")
-  script(src="/scripts/chess-board.js")
   script(src="/scripts/chess-logic.js")
-  script(src="/scripts/chess-board.js")
+  script(src="/scripts/app.js")
+  script(src="/scripts/services/socket.js")
+  script(src="/scripts/services/me.js")
+  script(src="/scripts/services/challengeList.js")
+  script(src="/scripts/controllers/index.js")
+  script(src="/scripts/controllers/viewChallenges.js")
+  script(src="/scripts/controllers/play.js")
+  script(src="/scripts/controllers/chessBoard.js")

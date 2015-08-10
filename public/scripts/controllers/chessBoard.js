@@ -1,5 +1,3 @@
-// Every piece object in the DOM has the class .chess-piece.
-
 // The size of the left border of the chess squares.
 var LEFT_BORDER_WIDTH_PX = 1;
 
@@ -57,11 +55,49 @@ var getSquareSize = function() {
   return $(".chess-board-origin").innerWidth();
 }
 
+// Gives the CSS classes for a square, based on its location.
+var squareClasses = function(loc) {
+  var classes = "";
+
+  if (loc.col === 0 && loc.row === 7) {
+    classes += "chess-board-origin ";
+  }
+
+  if (loc.col === 0) {
+    classes += "col-leftmost ";
+  } else if (loc.col === 7) {
+    classes += "col-rightmost ";
+  }
+
+  if (loc.row === 7) {
+    classes += "row-top ";
+  } else if (loc.row === 0) {
+    classes += "row-bottom ";
+  }
+
+  if (loc.row % 2 === loc.col % 2) {
+    classes += "black-square ";
+  } else {
+    classes += "white-square ";
+  }
+
+  return classes;
+};
+
+
+// This directive is attached to an element to trigger a function when the
+// element is finished loading. It is used to set up the jQuery event handlers
+// and display the chess board after Angular has finished rendering the chess
+// board.
 chessApp.directive( 'elemReady', function( $parse, $timeout ) {
    return {
        restrict: 'A',
        link: function( $scope, elem, attrs ) {
           elem.ready(function(){
+            // $timeout is needed to take this out of the digest cycle. Without
+            // $timeout, this will trigger an error for using $scope.$apply inside
+            // the digest cycle. However, without $scope.$apply, it doesn't work.
+            // I don't know what exactly is going on here, but this seems to work.
             $timeout(function() {
               $scope.$apply(function(){
                   var func = $parse(attrs.elemReady);
@@ -147,12 +183,17 @@ chessApp.controller('chessBoardController', function($scope) {
     }
   };
 
+  // The move event is trigged by the challengeList service when we receive
+  // a new move in a game from the server.
   $scope.$on('move', function(event, data) {
     refreshDisplay();
   });
 
+  // This handler gets called by the elem-ready directive on the chess board
+  // when the chess board is finished rendering. It might be called more than once,
+  // is why we need the eventsRegistered variable to avoid doubly registering the
+  // event handlers.
   var eventsRegistered = false;
-
   $scope.ready = function() {
     if (!eventsRegistered) {
       $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
@@ -165,32 +206,3 @@ chessApp.controller('chessBoardController', function($scope) {
     refreshDisplay();
   };
 })
-
-// Gives the CSS classes for a square, based on its location.
-var squareClasses = function(loc) {
-  var classes = "";
-
-  if (loc.col === 0 && loc.row === 7) {
-    classes += "chess-board-origin ";
-  }
-
-  if (loc.col === 0) {
-    classes += "col-leftmost ";
-  } else if (loc.col === 7) {
-    classes += "col-rightmost ";
-  }
-
-  if (loc.row === 7) {
-    classes += "row-top ";
-  } else if (loc.row === 0) {
-    classes += "row-bottom ";
-  }
-
-  if (loc.row % 2 === loc.col % 2) {
-    classes += "black-square ";
-  } else {
-    classes += "white-square ";
-  }
-
-  return classes;
-};
