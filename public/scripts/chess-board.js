@@ -57,7 +57,23 @@ var getSquareSize = function() {
   return $(".chess-board-origin").innerWidth();
 }
 
-chessApp.controller('chessBoardController', function($scope, challengeList) {
+chessApp.directive( 'elemReady', function( $parse, $timeout ) {
+   return {
+       restrict: 'A',
+       link: function( $scope, elem, attrs ) {
+          elem.ready(function(){
+            $timeout(function() {
+              $scope.$apply(function(){
+                  var func = $parse(attrs.elemReady);
+                  func($scope);
+              })
+            }, 0);
+          })
+       }
+    }
+});
+
+chessApp.controller('chessBoardController', function($scope) {
   var game = $scope.$parent.game;
   var processingPieceDrag = false;
   var dragStartLoc = null;
@@ -135,15 +151,19 @@ chessApp.controller('chessBoardController', function($scope, challengeList) {
     refreshDisplay();
   });
 
-  // XXX: timeout hack
-  setTimeout(function() {
-    $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
-    $('body').on('mousemove', mousemoveHandler);
-    $("#chess-board").on("mouseup", mouseupHandler);
-    $(window).on('resize', refreshDisplay);
+  var eventsRegistered = false;
+
+  $scope.ready = function() {
+    if (!eventsRegistered) {
+      $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
+      $('body').on('mousemove', mousemoveHandler);
+      $("#chess-board").on("mouseup", mouseupHandler);
+      $(window).on('resize', refreshDisplay);
+      eventsRegistered = true;
+    }
 
     refreshDisplay();
-  }, 1000);
+  };
 })
 
 // Gives the CSS classes for a square, based on its location.
