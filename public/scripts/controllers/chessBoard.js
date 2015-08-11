@@ -51,8 +51,7 @@ function mouseToLoc(mouseX, mouseY) {
   var squareSize = getSquareSize();
   var boardPos = $(".chess-board-origin").offset();
   return { row: 7 - Math.floor((mouseY - boardPos.top) / squareSize),
-           col: Math.floor((mouseX - (boardPos.left + LEFT_BORDER_WIDTH_PX))
-                                / squareSize) };
+           col: Math.floor((mouseX - boardPos.left) / squareSize) };
 }
 
 // Gives the CSS classes for a square, based on its location.
