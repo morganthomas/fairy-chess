@@ -9,19 +9,20 @@ function displayState(game) {
   forEachLoc(state.board, function(loc) {
     var piece = getSquare(state.board, loc);
     if (piece) {
-      displayPiece(loc, piece);
+      displayPiece(game, loc, piece);
     }
   });
 }
 
 // Gives the filename of the image for the given piece.
-function pieceImageName(piece) {
-  // XXX
-  return "images/WhitePawn.png";
+function pieceImageName(game, piece) {
+  var colorName = piece.color === 'white' ? 'White' : 'Black';
+
+  return "images/" + colorName + game.pieceTypes[piece.type].icon + ".png";
 }
 
-function makePieceImage(piece) {
-  var $piece = $('<div><img src="' + pieceImageName(piece) + '"></div>');
+function makePieceImage(game, piece) {
+  var $piece = $('<div><img src="' + pieceImageName(game, piece) + '"></div>');
   return $piece;
 }
 
@@ -30,9 +31,9 @@ var getSquareSize = function() {
 }
 
 // Creates a DOM object displaying the given piece.
-function displayPiece(loc, piece) {
+function displayPiece(game, loc, piece) {
   var squareSize = getSquareSize();
-  var $piece = makePieceImage(piece);
+  var $piece = makePieceImage(game, piece);
   $piece.addClass('chess-piece');
   $piece.css("top", (7 - loc.row) * 100 + "%");
   $piece.css("left", loc.col * 100 + "%");

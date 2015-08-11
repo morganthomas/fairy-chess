@@ -27,6 +27,7 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
     var challenge = _.find(challengeList, function(challenge) {
       return challenge._id === challengeId;
     });
+    console.log(challenge);
     $scope.game = challenge.game;
 
     // Find the white and black players so we know their usernames in the view.

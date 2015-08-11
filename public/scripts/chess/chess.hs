@@ -20,11 +20,6 @@ data PieceType = PieceType {
   ptRoyal :: Bool
 }
 
-data Move = SelfMove {
-  smFrom :: Loc,
-  smTo :: Loc
-}
-
 data Piece = Piece {
   pieceType :: PieceTypeId,
   pieceColor :: Color,
@@ -33,6 +28,11 @@ data Piece = Piece {
 }
 
 type Board = Map.Map Loc (Maybe Piece)
+
+data Move = SelfMove {
+  smFrom :: Loc,
+  smTo :: Loc
+}
 
 data GameStatus = GameNotOver | Stalemate | Checkmate
 
