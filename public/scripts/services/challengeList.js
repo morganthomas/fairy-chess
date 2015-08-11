@@ -73,10 +73,10 @@ chessApp.factory('challengeList', function(socket, $rootScope) {
 
 // This function runs the given callback when the challenge list is initialized.
 // Requires a scope and the challenge list as parameter.
-var whenActiveChallengesLoaded = function($scope, challengeList, cb) {
+var whenActiveChallengesLoaded = function($scope, challengeList, cb, cbName) {
   if (challengeList.initialized) {
     cb();
   } else {
-    $scope.on('active-challenges-loaded', cb);
+    $scope.$on('active-challenges-loaded', cb);
   }
 }

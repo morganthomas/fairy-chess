@@ -1,6 +1,6 @@
 .col-md-8.chess-board-container.noselect
-  #chess-board(ng-controller="chessBoardController" elem-ready="ready()")
-    .chess-square(ng-repeat="loc in boardLocs" class="{{squareClasses(loc)}}")
+  #chess-board(ng-controller="chessBoardController" elem-ready="boardReady()")
+    .chess-square(ng-repeat="loc in boardLocs" class="{{squareClasses(loc)}}" elem-ready="squareReady()")
 
 #chess-dashboard.col-md-4.panel.panel-primary
   .panel-heading <strong>{{players.white.username}}</strong> vs. <strong>{{players.black.username}}</strong>

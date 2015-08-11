@@ -1,4 +1,4 @@
-chessApp.controller('playController', function($scope, $routeParams, me, challengeList, socket) {
+chessApp.controller('playController', function($scope, $routeParams, me, challengeList, socket, $rootScope) {
   $scope.$parent.notAtHome = true;
   $scope.squareClasses = squareClasses;
 
@@ -36,5 +36,8 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
     var whitePlayer = challenge.sender._id === $scope.game.players.white ? 0 : 1;
     $scope.players.white = players[whitePlayer];
     $scope.players.black = players[1 - whitePlayer];
+
+    $scope.playControllerInitialized = true;
+    $scope.$broadcast('play-controller-initialized');
   });
 })
