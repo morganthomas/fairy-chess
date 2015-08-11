@@ -16,7 +16,9 @@ var newGame = function(player1, player2) {
 var emitToUsers = function(connections, users, messageType, messageBody) {
   users.forEach(function(userId) {
     if (connections[userId]) {
-      connections[userId].emit(messageType, messageBody);
+      connections[userId].forEach(function(socket) {
+        socket.emit(messageType, messageBody);
+      });
     }
   })
 }
@@ -28,12 +30,14 @@ var gameSocketServer = function(httpServer, sessionMiddleware) {
     sessionMiddleware(socket.request, {}, next);
   });
 
-  // A map from user IDs to connections.
+  // A map from user IDs to arrays of connections (a user might have more than one
+  // connection).
   var connections = {};
 
   io.on('connection', function(socket) {
     // XXX: Look up the user
-    var userId = socket.request.session && socket.request.session.passport && socket.request.session.passport.user;
+    var userId = socket.request.session && socket.request.session.passport &&
+      socket.request.session.passport.user;
 
     if (!userId) {
       return;
@@ -44,7 +48,21 @@ var gameSocketServer = function(httpServer, sessionMiddleware) {
         return; // XXX
       }
 
-      connections[user.id] = socket;
+      if (!connections[user.id]) {
+        connections[user.id] = [];
+      }
+
+      connections[user.id].push(socket);
+
+      socket.on('disconnect', function() {
+        connections[user.id] = connections[user.id].filter(function(otherSocket) {
+          return otherSocket.id !== socket.id;
+        });
+
+        if (connections[user.id].length === 0) {
+          delete connections[user.id];
+        }
+      });
 
       socket.on('create-challenge', function(receiverUsername) {
         createChallenge(connections, socket, user, receiverUsername);
