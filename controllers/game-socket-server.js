@@ -77,35 +77,8 @@ var gameSocketServer = function(httpServer, sessionMiddleware) {
       });
 
       socket.on('move', function(data) {
-        var fail = function(why) {
-          socket.emit('move-rejected', {
-            game: data.game, move: data.move, why: why
-          });
-        }
-
-        if (data.game && data.move && data.index) {
-          Game.findById(data.game, function(err, game) {
-            if (err) {
-              return fail('Database error finding game.');
-            }
-
-            if (chess.moveIsLegal(game, data.move)) {
-              chess.executeMove(game, data.move);
-
-              game.save(function(err) {
-                if (err) {
-                  return fail('Database error saving game.');
-                }
-
-                emitToUsers(connections, [game.players.white, game.players.black],
-                  'move', data);
-              })
-            } else {
-              return fail('Move is illegal.');
-            }
-          })
-        }
-      })
+        doMove(connections, socket, user, data);
+      });
 
       sendInitialState(socket, user);
     })
@@ -228,6 +201,37 @@ var acceptChallenge = function(connections, socket, user, challengeId) {
       });
     }
   })
+}
+
+var doMove = function(connections, socket, user, data) {
+  var fail = function(why) {
+   socket.emit('move-rejected', {
+     game: data.game, move: data.move, why: why
+   });
+  }
+
+  if (data.game && data.move && data.index) {
+   Game.findById(data.game, function(err, game) {
+     if (err) {
+       return fail('Database error finding game.');
+     }
+
+     if (chess.moveIsLegal(game, data.move)) {
+       chess.executeMove(game, data.move);
+
+       game.save(function(err) {
+         if (err) {
+           return fail('Database error saving game.');
+         }
+
+         emitToUsers(connections, [game.players.white, game.players.black],
+           'move', data);
+       })
+     } else {
+       return fail('Move is illegal.');
+     }
+   })
+  }
 }
 
 module.exports = gameSocketServer;
