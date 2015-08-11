@@ -55,6 +55,10 @@ chessApp.factory('challengeList', function(socket, $rootScope) {
     console.log("move", data)
 
     for (var i = 0; i < challengeList.length; i++) {
+      if (!challengeList[i].game) {
+        continue;
+      }
+      
       var game = challengeList[i].game;
       if (game._id === data.game &&
             getCurrentStateIndex(game) < data.index) {
