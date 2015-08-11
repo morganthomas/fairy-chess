@@ -32,7 +32,6 @@ var getSquareSize = function() {
 // Creates a DOM object displaying the given piece.
 function displayPiece(loc, piece) {
   var squareSize = getSquareSize();
-  console.log(squareSize);
   var $piece = makePieceImage(piece);
   $piece.addClass('chess-piece');
   $piece.css("top", (7 - loc.row) * 100 + "%");
