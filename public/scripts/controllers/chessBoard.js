@@ -1,9 +1,6 @@
 // The chess board is written in jQuery. I tried using a drag and drop library
 // for Angular, but I couldn't get it to work and it was slow.
 
-// The size of the left border of the chess squares.
-var LEFT_BORDER_WIDTH_PX = 1;
-
 function displayState(game) {
   var state = getCurrentState(game);
 
@@ -28,14 +25,18 @@ function makePieceImage(piece) {
   return $piece;
 }
 
+var getSquareSize = function() {
+  return parseInt($(".chess-board-origin").css('width'));
+}
+
 // Creates a DOM object displaying the given piece.
 function displayPiece(loc, piece) {
   var squareSize = getSquareSize();
+  console.log(squareSize);
   var $piece = makePieceImage(piece);
   $piece.addClass('chess-piece');
-  $piece.css("top", (7 - loc.row) * squareSize + "px");
-  $piece.css("left", (loc.col * squareSize + LEFT_BORDER_WIDTH_PX)
-    + "px");
+  $piece.css("top", (7 - loc.row) * 100 + "%");
+  $piece.css("left", loc.col * 100 + "%");
   // Necessary to prevent the browser from interpreting the user as
   // attempting an image drag when they drag a piece.
   $piece.on('dragstart', function(event) {
@@ -54,28 +55,12 @@ function mouseToLoc(mouseX, mouseY) {
                                 / squareSize) };
 }
 
-var getSquareSize = function() {
-  return $(".chess-board-origin").innerWidth();
-}
-
 // Gives the CSS classes for a square, based on its location.
 var squareClasses = function(loc) {
   var classes = "";
 
   if (loc.col === 0 && loc.row === 7) {
     classes += "chess-board-origin ";
-  }
-
-  if (loc.col === 0) {
-    classes += "col-leftmost ";
-  } else if (loc.col === 7) {
-    classes += "col-rightmost ";
-  }
-
-  if (loc.row === 7) {
-    classes += "row-top ";
-  } else if (loc.row === 0) {
-    classes += "row-bottom ";
   }
 
   if (loc.row % 2 === loc.col % 2) {

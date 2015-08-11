@@ -24,24 +24,6 @@
   position: relative;
 }
 
-/* Change LEFT_BORDER_WIDTH_PX in chess-ui.js if you change the width
-    of this border. */
-.col-leftmost {
-  border-left: 1px solid #A3B2BF;
-}
-
-.col-rightmost {
-  border-right: 1px solid #A3B2BF;
-}
-
-.row-top {
-  border-top: 1px solid #A3B2BF;
-}
-
-.row-bottom {
-  border-bottom: 1px solid #A3B2BF;
-}
-
 .black-square {
   background-color: #A3B2BF;
 }
