@@ -9,7 +9,7 @@
   margin: auto;
   position: relative;
   overflow: hidden;
-  max-width: 70vmin;
+  max-width: 90vmin;
 }
 
 #chess-board table {
