@@ -1,5 +1,3 @@
-{{challenge}}
-
 .col-md-8.chess-board-container.noselect
   #chess-board(ng-controller="chessBoardController" elem-ready="boardReady()")
     .chess-square(ng-repeat="loc in boardLocs" class="{{squareClasses(loc)}}" elem-ready="squareReady()")

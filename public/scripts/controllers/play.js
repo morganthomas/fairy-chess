@@ -5,21 +5,17 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
   // Checks if a move from startLoc to endLoc is legal. If so, updates the
   // game state to reflect the move and sends the move to the server.
   $scope.performMove = function(startLoc, endLoc) {
-    var move = {
-      template: 'dummy',
-      params: {
-        from: startLoc,
-        to: endLoc
-      }
-    };
+    var move = constructMove(getCurrentState($scope.game), startLoc, endLoc);
 
-    executeMove($scope.game, move);
+    if (moveIsLegal($scope.game, move)) {
+      executeMoveInGame($scope.game, move);
 
-    socket.emit('move', {
-      game: $scope.game._id,
-      move: move,
-      index: getCurrentStateIndex($scope.game)
-    });
+      socket.emit('move', {
+        game: $scope.game._id,
+        move: move,
+        index: getCurrentStateIndex($scope.game)
+      });
+    }
   }
 
   whenActiveChallengesLoaded($scope, challengeList, function() {
@@ -27,8 +23,8 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
     var challenge = _.find(challengeList, function(challenge) {
       return challenge._id === challengeId;
     });
-    console.log(challenge);
     $scope.game = challenge.game;
+    console.log(challenge.game.pieceTypes);
 
     // Find the white and black players so we know their usernames in the view.
     // The game object just includes the player IDs.

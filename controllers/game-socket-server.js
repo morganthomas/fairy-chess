@@ -217,7 +217,7 @@ var doMove = function(connections, socket, user, data) {
      }
 
      if (chess.moveIsLegal(game, data.move)) {
-       chess.executeMove(game, data.move);
+       chess.executeMoveInGame(game, data.move);
 
        game.save(function(err) {
          if (err) {

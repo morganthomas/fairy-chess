@@ -8,6 +8,27 @@ if (typeof window === 'undefined') {
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// Utility
+//
+///////////////////////////////////////////////////////////////////////////////
+
+// Maps a function over an array and returns the array of output values
+// which were truthy.
+var mapFilter = function(array, f) {
+  var result = [];
+
+  array.forEach(function(x) {
+    var y = f(x);
+    if (y) {
+      result.push(y);
+    }
+  });
+
+  return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // Basic types:
 //  * A location is an object with properties row and col.
 //  * A color is one of 'white' or 'black'.
@@ -40,12 +61,33 @@ if (typeof window === 'undefined') {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+var colorOrientation = function(color) {
+  return color === 'black' ? -1 : 1;
+}
+
+// Adds two locations.
+function locPlus(loc1, loc2) {
+  return { row: loc1.row + loc2.row, col: loc1.col + loc2.col };
+}
+
+// Says whether two locations are equal.
+function locEq(loc1, loc2) {
+  return loc1.row === loc2.row &&
+         loc1.col === loc2.col;
+}
+
 var getSquare = function(board, loc) {
   return board[loc.row][loc.col];
 }
 
 var setSquare = function(board, loc, val) {
   board[loc.row][loc.col] = val;
+}
+
+// Says whether the given location is in the bounds of the given board.
+var isInBounds = function(board, loc) {
+  return 0 <= loc.row && loc.row < board.length &&
+    0 <= loc.col && loc.col < board[0].length;
 }
 
 // Calls the given function on each location in the given board.
@@ -70,6 +112,21 @@ var makeEmptyBoard = function(boardInfo) {
   }
 
   return board;
+}
+
+// Gets the current state in a game.
+var getCurrentState = function(game) {
+  return game.states[getCurrentStateIndex(game)];
+}
+
+// Gets the index of the current state in a game.
+var getCurrentStateIndex = function(game) {
+  return game.states.length - 1;
+}
+
+// Gets the piece type object for a given piece in a given game.
+var getPieceType = function(game, piece) {
+  return game.pieceTypes[piece.type];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -269,7 +326,10 @@ var allMovementVectors = [
 // These movement types are "non-nestable," meaning that they can't appear inside
 // movement rules that contain movement rules. Presently all movement rules which
 // contain movement rules are non-nestable.
-var nonNestableMovementTypes = ['exchange', 'retreat', 'movecapture', 'combination']
+var nonNestableMovementTypes = ['exchange', 'retreat', 'movecapture', 'combination'];
+
+var nestableMovementTypes = ['walker', 'rider', 'leaper', 'leaprider',
+  'catapult', 'grasshopper', 'leapfrog'];
 
 // This is the exchange parameter generator, which is common to all ranks.
 var makeExchangeParameterGenerator = function(generateMovementRule) {
@@ -846,42 +906,616 @@ var generateGame = function(player1, player2) {
 
   startState.board = generateStartingBoard(game.boardInfo, game.pieceTypes);
 
+  // Generate some data used for legal move generation, explained below.
+  precomputePaths(game);
+
   return game;
 };
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// XXX: Organize this stuff
+// Moves, like movement rules, are generic objects. A move consists of a
+// move type, identified by a string, and a set of parameters. Each move type
+// t is associated with a function executeMoveType[t](game, state, params, piece),
+// which produces (non-destructively) the new state that results from executing
+// a move of type t with the given params by the given piece in the given game
+// in the given state. The executeMove function should not assume that the state
+// is the most recent in the game, or that it is one which has occurred in the
+// game.
+//
+// Formally, a move is an object with properties:
+//  type: A string.
+//  params: A key-value map.
+//  piece: The piece doing the move.
+//
+// Presently, we have two move types:
+//  'selfmove': A move whcih simply moves the piece doing the move, capturing any
+//    piece in the square it moves to.
+//  'exchange': A move which exchanges the piece doing the move with any piece
+//    in the square it moves to.
+//
+// These move types have the following parameters:
+//
+// SELFMOVE:
+//   to: A location, saying where the piece is moving to.
+//
+// EXCHANGE:
+//  to: A location, saying where the piece is moving to.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-var getCurrentState = function(game) {
-  return game.states[getCurrentStateIndex(game)];
-}
+// Given a state and "from" and "to" locations, constructs a move which tries to
+// be a legal move based on it. There is always at most one legal move in a given
+// state with given "from" and "to" locations, and this function finds it if it
+// exists. Returns null if there is no piece at "from."
+var constructMove = function(state, from, to) {
+  var fromContents = getSquare(state.board, from);
+  var toContents = getSquare(state.board, to);
 
-var getCurrentStateIndex = function(game) {
-  return game.states.length - 1;
-}
+  if (!fromContents) {
+    return null;
+  }
 
-// Given a game and a move (which is assumed to be legal), performs the move
-// and updates the game accordingly.
-var executeMove = function(game, move) {
-  if (move.template === 'dummy') {
-    var state = getCurrentState(game);
-    var newState = _.cloneDeep(state);
-    var newPiece = _.clone(getSquare(state.board, move.params.from));
-    setSquare(newState.board, move.params.from, null);
-    setSquare(newState.board, move.params.to, newPiece);
-    game.states.push(newState);
-    game.moves.push(move);
+  if (toContents && toContents.color === fromContents.color) {
+    return {
+      piece: fromContents,
+      type: 'exchange',
+      params: {
+        to: to
+      }
+    }
+  } else {
+    // The destination square is empty or contains an enemy piece
+    return {
+      piece: fromContents,
+      type: 'selfmove',
+      params: {
+        to: to
+      }
+    }
   }
 }
+
+var executeMoveType = {
+  'selfmove': function(game, state, params, piece) {
+    // XXX: Don't use _.cloneDeep; it's slow
+    var newState = _.cloneDeep(state);
+    var movedPiece = _.cloneDeep(piece);
+    movedPiece.loc = params.to;
+    setSquare(newState.board, params.to, movedPiece);
+    setSquare(newState.board, piece.loc, null);
+    return newState;
+  },
+
+  'exchange': function(game, state, params, piece) {
+    // XXX: Don't use _.cloneDeep
+    var newState = _.cloneDeep(state);
+    var loc1 = piece.loc;
+    var loc2 = params.to;
+
+    var movedPiece1 = _.cloneDeep(piece);
+    movedPiece1.loc = loc2;
+
+    var movedPiece2 = _.cloneDeep(getSquare(state.board, loc2));
+    movedPiece2.loc = loc1;
+
+    setSquare(newState.board, loc1, movedPiece2);
+    setSquare(newState.board, loc2, movedPiece1);
+
+    return newState;
+  }
+};
+
+// Given a game and a move, assumes the move is legal, and performs the move,
+// updating the game destructively.
+var executeMoveInGame = function(game, move) {
+  var state = getCurrentState(game);
+  var newState = executeMoveType[move.type](game, state, move.params, move.piece);
+  game.states.push(newState);
+  game.moves.push(move);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Semi-legal move generation
+//
+// A semi-legal move is one which is legal, except that it might place the player
+// who is moving in check. Our strategy for generating the legal moves in a given
+// state involves first generating the semi-legal moves in that state.
+//
+// This strategy relies on a map semiLegalMovesForPieceType from movement types to
+// functions. Given a movement type t, semiLegalMovesForPieceType[t](game, state, params, piece)
+// produces all semi-legal moves for the given piece in the given state.
+//
+// Our strategy for generating most semi-legal moves (currently, all but exchange
+// moves) works as follows. First we generate the set of paths which the piece
+// can move along. A path is a series of unit vectors, showing the squares the
+// piece moves through in turn. This set of paths is always finite because
+// the board is finite.
+//
+// Next, we specify a movement controller. The movement controller is a function
+//   control(game, state, piece, loc, data) -> [directive, newData]
+// where the parameters and outputs are as follows:
+//   game: The game.
+//   state: The current state.
+//   piece: The piece being moved.
+//   loc: A location along the path.
+//   data, newData: Some state data used by the controller.
+//   directive: A movement directive; one of 'continue', 'stop here exclusive',
+//     'stop here inclusive', or 'continue no stop'.
+//
+// To determine the semi-legality of a move, we take its path and its controller.
+// We run through every location on the path, calling control with the location
+// and with the data produced by the control on the last step. This produces a
+// movement directive which indicates whether we can continue, whether we can
+// stop, etc. The directives have the following meaning:
+//   'continue': Puts no constraints on the semi-legality of the move.
+//   'stop here exclusive': The move is not semi-legal.
+//   'stop here inclusive': The move is semi-legal, as long as this step is the
+//     end of the path.
+//   'continue no stop': The move is semi-legal, as long as this step is not
+//     the end of the path.
+//
+// The "non-nestable" movement types are movecapture, combination, exchange,
+// and retreat. All other movement types are "nestable." Exactly the nestable
+// movement types have their semi-legal moves generated by the method just
+// described.
+//
+// To save computation during gameplay, we precompute all of the paths that
+// can be used for a given movement rule, and attach them to the piece type.
+// Once this is done, semiLegalMovesForPieceType[t] can be defined, for any
+// nestable type t, as simpleSelfmoveGenerator(controller) for some controller.
+// (See below.)
+//
+// It is noteworthy that the possible paths depend on whether we are black
+// or white, because black moves down the board and white moves up the board.
+// Therefore the precomputed paths are stored as an object of the form
+//   { white: <array of paths>, black: <array of paths> }
+//
+// To be used inside movecapture, the nestable movement types must be able
+// to provide move generation functions for no-capture and capture-only
+// variants of themselves.
+//
+// The difference between the no-capture, capture-only, and regular (move-and-capture)
+// variants of a movement rule are just the movement controller used. Building
+// on this observation, we define a map nestableMoveControllers which
+// goes from (the name of) a nestable movement type t to an object of the form
+//  { regular: <controller>, moveOnly: <controller>, captureOnly: <controller> }
+// This map can be used by the moveandcapture move generator.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+//
+// PATH SETS
+//
+
+// NOTE: We should statically generate, for each movement rule where it is
+// applicable, the set of paths which it can use.
+
+// This function takes an array of paths and produces all paths which are
+// the result of uniformly repeating one of the paths.
+var uniformUnlimitedRepeatPaths = function(game, paths) {
+  var resultPaths = [];
+
+  paths.forEach(function(path) {
+    var pathRowDiff = 0;
+    var pathColDiff = 0;
+
+    path.forEach(function(vec) {
+      pathRowDiff += vec.row;
+      pathColDiff += vec.col;
+    });
+
+    var pathRowLength = Math.abs(pathRowDiff);
+    var pathColLength = Math.abs(pathColDiff);
+
+    var pathVertRepsLimit = Math.floor(game.boardInfo.numRows / pathRowLength);
+    var pathHorizRepsLimit = Math.floor(game.boardInfo.numCols / pathColLength);
+
+    var pathRepsLimit = Math.min(pathVertRepsLimit, pathHorizRepsLimit);
+
+    for (var reps = 1; reps <= pathRepsLimit; reps++) {
+      var repeatedPath = [];
+
+      for (var i = 0; i < reps; i++) {
+        for (var j = 0; j < path.length; j++) {
+          repeatedPath.push(path[j]);
+        }
+      }
+
+      resultPaths.push(repeatedPath);
+    }
+  });
+
+  return resultPaths;
+}
+
+// This function takes an array of paths and produces all paths which are
+// the result of non-uniformly repeating some of the paths between min and
+// max times.
+var nonuniformLimitedRepeatPaths = function(game, paths, min, max) {
+  var resultPaths = [];
+
+  for (var reps = min; reps <= max; reps++) {
+    resultPaths = resultPaths.concat(nonuniformFixedRepeatPaths(game, paths, reps));
+  }
+
+  return resultPaths;
+}
+
+// Like nonuniformLimitedRepeatPaths, but does a fixed number of repetitions.
+var nonuniformFixedRepeatPaths = function(game, paths, n) {
+  if (n === 1) {
+    return paths;
+  } else {
+    var shorterPaths = nonuniformFixedRepeatPaths(game, paths, n-1);
+    var resultPaths = [];
+
+    shorterPaths.forEach(function(sp) {
+      paths.forEach(function(p) {
+        resultPaths.push(sp.concat(p));
+      });
+    });
+
+    return resultPaths;
+  }
+}
+
+// This function takes the unit vectors used in walker, rider, etc. parameters
+// and generates the full set of unit vectors by reflecting across the Y axis.
+var makeHorizontalSymmetry = function(vectors) {
+  var results = [];
+
+  vectors.forEach(function(vector) {
+    results.push(vector);
+
+    if (vector.col !== 0) {
+      results.push({ row: vector.row, col: -vector.col });
+    }
+  });
+
+  return results;
+}
+
+// Takes an array of unit vectors and orients them to the color given; that is,
+// it flips them vertically if the color is black.
+var orientVectorsToColor = function(color, vectors) {
+  var orientation = colorOrientation(color);
+  return vectors.map(function(vector) {
+    return { row: orientation * vector.row, col: vector.col };
+  });
+}
+
+// Takes an array of vectors and produces an array of length-one paths.
+var unitVectorsToPaths = function(vectors) {
+  return vectors.map(function(vector) {
+    return [vector];
+  });
+};
+
+// Takes an array of unit vectors as found in move rule parameters and
+// converts it to an array of paths of length 1 suitable for path generation.
+var seedPathsFromUnitVectors = function(color, vectors) {
+  return unitVectorsToPaths(makeHorizontalSymmetry(orientVectorsToColor(color, vectors)));
+}
+
+// Returns the destination of a path if you start from (0,0).
+var pathDest = function(path) {
+  var dest = { row: 0, col: 0 };
+
+  path.forEach(function(vec) {
+    dest = locPlus(dest, vec);
+  });
+
+  return dest;
+}
+
+// Filters a path set so it doesn't contain any paths that go to the same place.
+var makePathDestinationsUnique = function(paths) {
+  return _.uniq(paths, false, pathDest);
+}
+
+// Makes an L-shaped path, going a given number of rows and a given number
+// of columns. The order in which the row and column moves occur is unspecified.
+// We can get away with this because we only use this function for leapers,
+// where it doesn't make a difference. Takes signs for the rows and cols,
+// indicating the direction of movement.
+var makeLPath = function(rows, rowsSign, cols, colsSign) {
+  var path = [];
+
+  for (var i = 0; i < rows; i++) {
+    path.push({ row: rowsSign, col: 0 });
+  }
+
+  for (var i = 0; i < cols; i++) {
+    path.push({ row: 0, col: colsSign });
+  }
+
+  return path;
+}
+
+var makeWalkerPaths = function(game, color, params) {
+  return nonuniformLimitedRepeatPaths(game,
+    seedPathsFromUnitVectors(color, params.vectors),
+    params.min,
+    params.max);
+}
+
+var makeRiderPaths = function(game, color, params) {
+  return uniformUnlimitedRepeatPaths(game,
+    seedPathsFromUnitVectors(color, params.vectors));
+}
+
+// Takes a set of leaper parameters and produces the paths it describes.
+var makeLeaperPaths = function(game, color, params) {
+  var paths = [];
+
+  for (var n = params.nmin; n <= params.nmax; n++) {
+    for (var m = params.mmin; m <= params.mmax; m++) {
+      [1,-1].forEach(function(s) {
+        [1,-1].forEach(function(t) {
+          paths.push(makeLPath(n, s, m, t));
+          paths.push(makeLPath(m, s, n, t));
+        })
+      })
+    }
+  }
+
+  return makePathDestinationsUnique(paths);
+}
+
+var makeLeapriderPaths = function(game, color, params) {
+  return uniformUnlimitedRepeatPaths(game, makeLeaperPaths(game, color, params));
+}
+
+var makePathsStub = function() {
+  return [];
+}
+
+// Path computing functions for all nestable types.
+var pathComputingFunctions = {
+  'walker': makeWalkerPaths,
+  'rider': makeRiderPaths,
+  'leaper': makeLeaperPaths,
+  'leaprider': makeLeapriderPaths,
+  'catapult': makePathsStub,
+  'grasshopper': makePathsStub,
+  'leapfrog': makePathsStub
+}
+
+// Computes the path sets for the various piece types in a game, and installs
+// them as "paths" properties on the piece type.
+var precomputePaths = function(game) {
+  // Find all the rules of nestable movement types.
+  var nestableRules = [];
+
+  game.pieceTypes.forEach(function (pieceType) {
+    var rule = pieceType.movementRule;
+
+    if (_.include(nestableMovementTypes, rule.type)) {
+      nestableRules.push(rule);
+    } else {
+      // The rule is non-nestable
+      if (rule.type === 'retreat' || rule.type === 'exchange') {
+        nestableRules.push(rule.params.regularMove);
+      } else if (rule.type === 'movecapture') {
+        nestableRules.push(rule.params.move);
+        nestableRules.push(rule.params.capture);
+      } else if (rule.type === 'combination') {
+        nestableRules.push(rule.params.first);
+        nestableRules.push(rule.params.second);
+      }
+    }
+  });
+
+  // Precompute the paths
+  nestableRules.forEach(function(rule) {
+    rule.paths = {
+      white: pathComputingFunctions[rule.type](game, 'white', rule.params),
+      black: pathComputingFunctions[rule.type](game, 'black', rule.params)
+    }
+  })
+}
+
+//
+// MOVEMENT CONTROLLERS
+//
+
+// Generates a movement controller which simply returns the given directive
+// when moving into a square of the corresponding type (empty, occupied by
+// an enemy piece, or occupied by a friendly piece).
+var simpleMovementController = function(empty, friendly, enemy) {
+  return function(game, state, piece, loc, data) {
+    var directive;
+    var contents = getSquare(state.board, loc);
+
+    if (!contents) {
+      directive = empty;
+    } else if (contents.color === piece.color) {
+      directive = friendly;
+    } else {
+      directive = enemy;
+    }
+
+    return [directive, data];
+  }
+}
+
+var regularMovementController =
+  simpleMovementController('continue', 'stop here exclusive', 'stop here inclusive');
+
+var regularMovementControllers = {
+  regular: regularMovementControllers,
+  moveOnly: simpleMovementController(
+    'continue', 'stop here exclusive', 'stop here exclusive'
+  ),
+  captureOnly: simpleMovementController(
+    'continue no stop', 'stop here exclusive', 'stop here inclusive'
+  )
+};
+
+var leaperMovementController =
+  simpleMovementController('continue', 'continue no stop', 'continue');
+
+var leaperMovementControllers = {
+  regular: leaperMovementController,
+  moveOnly: simpleMovementController(
+    'continue', 'continue no stop', 'continue no stop'
+  ),
+  captureOnly: simpleMovementController(
+    'continue no stop', 'continue no stop', 'continue'
+  )
+};
+
+var dummyMovementController = function() {
+  return 'stop here exclusive';
+}
+
+var dummyMovementControllers = {
+  regular: dummyMovementController,
+  moveOnly: dummyMovementController,
+  captureOnly: dummyMovementController
+}
+
+var nestableMoveControllers = {
+  'walker': regularMovementControllers,
+  'rider': regularMovementControllers,
+  'leaper': leaperMovementControllers,
+  'leaprider': leaperMovementControllers,
+  'catapult': dummyMovementControllers,
+  'grasshopper': dummyMovementControllers,
+  'leapfrog': dummyMovementControllers
+}
+
+// XXX: hopper controllers
+
+//
+// SEMI-LEGAL MOVE GENERATION
+//
+
+// Takes an array of paths, a controller, and start data for the controller, and
+// generates all semi-legal selfmoves for the given piece according to the given
+// information.
+var generateSelfmoves = function(controller, startData, paths, game, state, piece) {
+  return mapFilter(paths, function(path) {
+    var loc = piece.loc;
+    var data = startData;
+
+    for (var i = 0; i < path.length; i++) {
+      loc = locPlus(loc, path[i]);
+
+      if (!isInBounds(state.board, loc)) {
+        return null;
+      }
+
+      var result = controller(game, state, piece, loc, data);
+      var directive = result[0];
+      data = result[1];
+
+      if (directive === 'stop here exclusive') {
+        return null;
+      }
+
+      if (directive === 'stop here inclusive' && i !== path.length - 1) {
+        return null;
+      }
+
+      if (directive === 'continue no stop' && i === path.length - 1) {
+        return null;
+      }
+    }
+
+    // If we got here then the move is semi-legal, and loc is the destination.
+    return {
+      piece: piece,
+      type: 'selfmove',
+      params: {
+        to: loc
+      }
+    };
+  });
+}
+
+var simpleSelfmoveGenerator = function(controller) {
+  return function(game, state, params, piece, paths) {
+    if (!paths) {
+      paths = getPieceType(game, piece).movementRule.paths[piece.color];
+    }
+
+    return generateSelfmoves(controller, null, paths, game, state, piece);
+  }
+};
+
+var stubMoveGenerator = function() {
+  return [];
+}
+
+var semiLegalMovesForPieceType = {
+  'walker': simpleSelfmoveGenerator(regularMovementController),
+  'rider': simpleSelfmoveGenerator(regularMovementController),
+  'leaper': simpleSelfmoveGenerator(leaperMovementController),
+  'leaprider': simpleSelfmoveGenerator(leaperMovementController),
+
+  // Stubs
+  'exchange': stubMoveGenerator,
+  'retreat': stubMoveGenerator,
+  'catapult': stubMoveGenerator,
+  'grasshopper': stubMoveGenerator,
+  'leapfrog': stubMoveGenerator,
+
+  'movecapture': function(game, state, params, piece) {
+    var captureGenerator = simpleSelfmoveGenerator(
+      nestableMoveControllers[params.capture.type].captureOnly
+    );
+    var moveGenerator = simpleSelfmoveGenerator(
+      nestableMoveControllers[params.capture.type].moveOnly
+    );
+
+    return captureGenerator(game, state, params, piece, params.capture.paths[piece.color])
+      .concat(moveGenerator(game, state, params, piece, params.move.paths[piece.color]));
+  },
+
+  'combination': stubMoveGenerator
+}
+
+var semiLegalMovesForPiece = function(game, state, piece) {
+  var movementRule = getPieceType(game, piece).movementRule;
+  return semiLegalMovesForPieceType[movementRule.type]
+    (game, state, movementRule.params, piece);
+}
+
+var testSemiLegalMoves = function() {
+  var game = generateGame();
+  var state = getCurrentState(game);
+
+  forEachLoc(state.board, function(loc) {
+    var piece = getSquare(state.board, loc);
+
+    if (piece) {
+      console.log(semiLegalMovesForPiece(game, state, piece));
+    }
+  })
+}
+
+var moveIsSemiLegal = function(game, move) {
+  console.log(semiLegalMovesForPiece(game, getCurrentState(game), move.piece))
+  return !!_.find(semiLegalMovesForPiece(game, getCurrentState(game), move.piece),
+    function(otherMove) {
+      return _.isEqual(move, otherMove);
+    });
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// XXX
+//
+///////////////////////////////////////////////////////////////////////////////
 
 // Given a game and a move, says whether the move is legal in the current state.
 var moveIsLegal = function(game, move) {
   // XXX
-  return true;
+  return moveIsSemiLegal(game, move);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -892,6 +1526,6 @@ if (typeof window === 'undefined') {
   module.exports = {
     generateGame: generateGame,
     moveIsLegal: moveIsLegal,
-    executeMove: executeMove
+    executeMoveInGame: executeMoveInGame
   };
 }
