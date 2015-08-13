@@ -102,6 +102,15 @@ var forEachLoc = function(board, callback) {
   }
 }
 
+// Returns all locations in the given board.
+var allBoardLocs = function(board) {
+  var locs = [];
+  forEachLoc(board, function(loc) {
+    locs.push(loc);
+  });
+  return locs;
+}
+
 // Given board info, generates an empty board.
 var makeEmptyBoard = function(boardInfo) {
   var board = [];
@@ -1355,12 +1364,8 @@ var regularMovementController =
 
 var regularMovementControllers = {
   regular: regularMovementControllers,
-  moveOnly: simpleMovementController(
-    'continue', 'stop here exclusive', 'stop here exclusive'
-  ),
-  captureOnly: simpleMovementController(
-    'continue no stop', 'stop here exclusive', 'stop here inclusive'
-  )
+  moveOnly: simpleMovementController('continue', 'stop here exclusive', 'stop here exclusive'),
+  captureOnly: simpleMovementController('continue no stop', 'stop here exclusive', 'stop here inclusive')
 };
 
 var leaperMovementController =
@@ -1368,12 +1373,8 @@ var leaperMovementController =
 
 var leaperMovementControllers = {
   regular: leaperMovementController,
-  moveOnly: simpleMovementController(
-    'continue', 'continue no stop', 'continue no stop'
-  ),
-  captureOnly: simpleMovementController(
-    'continue no stop', 'continue no stop', 'continue'
-  )
+  moveOnly: simpleMovementController('continue', 'continue no stop', 'continue no stop'),
+  captureOnly: simpleMovementController('continue no stop', 'continue no stop', 'continue')
 };
 
 var dummyMovementController = function() {
@@ -1459,32 +1460,83 @@ var stubMoveGenerator = function() {
   return [];
 }
 
+var getNestableGenerator = function(rule, mood) {
+  return simpleSelfmoveGenerator(nestableMoveControllers[rule.type][mood]);
+}
+
 var semiLegalMovesForPieceType = {
   'walker': simpleSelfmoveGenerator(regularMovementController),
   'rider': simpleSelfmoveGenerator(regularMovementController),
   'leaper': simpleSelfmoveGenerator(leaperMovementController),
   'leaprider': simpleSelfmoveGenerator(leaperMovementController),
 
-  // Stubs
-  'exchange': stubMoveGenerator,
-  'retreat': stubMoveGenerator,
+  'exchange': function(game, state, params, piece) {
+    var destLocs = allBoardLocs(state.board).filter(function(loc) {
+      var otherPiece = getSquare(state.board, loc);
+      return otherPiece && otherPiece.color === piece.color &&
+        otherPiece.type === params.type;
+    });
+
+    return destLocs.map(function(loc) {
+      return {
+        piece: piece,
+        type: 'exchange',
+        params: {
+          to: loc
+        }
+      }
+    });
+  },
+
+  'retreat': function(game, state, params, piece) {
+    var regularGenerator = getNestableGenerator(params.regularMove, 'regular');
+
+    var retreatCols = params.squares === 'both' ?
+      [0,1,2,3,4,5,6,7] :
+      (params.squares === piece.color ?
+        [1,3,5,7] : [0,2,4,6])
+
+    var retreatRow = piece.color === 'black' ? 7 : 0;
+
+    var retreatLocs = retreatCols.map(function(col) {
+      return { row: retreatRow, col: col };
+    }).filter(function(loc) {
+      return !getSquare(state.board, loc);
+    });
+
+    var retreatMoves = retreatLocs.map(function(loc) {
+      return {
+        piece: piece,
+        type: 'selfmove',
+        params: {
+          to: loc
+        }
+      };
+    });
+
+    return regularGenerator(game, state, params, piece, params.regularMove.paths[piece.color])
+      .concat(retreatMoves);
+  },
+
   'catapult': stubMoveGenerator,
   'grasshopper': stubMoveGenerator,
   'leapfrog': stubMoveGenerator,
 
   'movecapture': function(game, state, params, piece) {
-    var captureGenerator = simpleSelfmoveGenerator(
-      nestableMoveControllers[params.capture.type].captureOnly
-    );
-    var moveGenerator = simpleSelfmoveGenerator(
-      nestableMoveControllers[params.capture.type].moveOnly
-    );
+    var captureGenerator = getNestableGenerator(params.capture, 'captureOnly');
+    var moveGenerator = getNestableGenerator(params.move, 'moveOnly');
 
     return captureGenerator(game, state, params, piece, params.capture.paths[piece.color])
       .concat(moveGenerator(game, state, params, piece, params.move.paths[piece.color]));
   },
 
-  'combination': stubMoveGenerator
+  'combination': function(game, state, params, piece) {
+    var firstGenerator = getNestableGenerator(params.first, 'regular');
+    var secondGenerator = getNestableGenerator(params.second, 'regular');
+
+    return firstGenerator(game, state, params, piece, params.first.paths[piece.color])
+      .concat(secondGenerator(game, state, params, piece, params.second.paths[piece.color]));
+  }
 }
 
 var semiLegalMovesForPiece = function(game, state, piece) {

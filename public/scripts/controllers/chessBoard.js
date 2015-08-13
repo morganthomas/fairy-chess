@@ -174,6 +174,8 @@ chessApp.controller('chessBoardController', function($scope, challengeList) {
         setSquare($scope.highlightBoard, loc, null);
       });
 
+      $scope.$parent.pieceTypeToDisplay = null;
+
       var state = getCurrentState(game);
       var loc = mouseToLoc(moveEvent.pageX, moveEvent.pageY);
 
@@ -181,9 +183,11 @@ chessApp.controller('chessBoardController', function($scope, challengeList) {
         return;
       }
 
-      pieceBeingHovered = getSquare(state.board, loc);
+      var pieceBeingHovered = getSquare(state.board, loc);
 
       if (pieceBeingHovered && !processingPieceDrag) {
+        $scope.$parent.pieceTypeToDisplay = getPieceType(game, pieceBeingHovered);
+
         // XXX: Show legal moves only
         semiLegalMovesForPiece(game, state, pieceBeingHovered)
           .forEach(function (move) {

@@ -1,5 +1,16 @@
+chessApp.directive('chessPieceTypeDisplay', function() {
+  return {
+    restrict: 'E',
+    templateUrl: '/templates/piece-type-display',
+    scope: {
+      pieceType: '=chessPieceType'
+    }
+  }
+})
+
 chessApp.controller('playController', function($scope, $routeParams, me, challengeList, socket, $rootScope) {
   $scope.$parent.notAtHome = true;
+  $scope.pieceTypeToDisplay = null; // set by chessBoard.js
 
   // Checks if a move from startLoc to endLoc is legal. If so, updates the
   // game state to reflect the move and sends the move to the server.
