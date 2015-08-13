@@ -1170,7 +1170,7 @@ var nonuniformFixedRepeatPaths = function(game, paths, n) {
   }
 }
 
-// This function takes the unit vectors used in walker, rider, etc. parameters
+// This function takes the unit vectors used in walker, rider, etc. parameters (vector sets)
 // and generates the full set of unit vectors by reflecting across the Y axis.
 var makeHorizontalSymmetry = function(vectors) {
   var results = [];
@@ -1202,7 +1202,7 @@ var unitVectorsToPaths = function(vectors) {
   });
 };
 
-// Takes an array of unit vectors as found in move rule parameters and
+// Takes an array of unit vectors as found in move rule parameters (i.e., a vector set) and
 // converts it to an array of paths of length 1 suitable for path generation.
 var seedPathsFromUnitVectors = function(color, vectors) {
   return unitVectorsToPaths(makeHorizontalSymmetry(orientVectorsToColor(color, vectors)));
