@@ -1,0 +1,29 @@
+div
+  div(ng-if="rule.type === 'walker'")
+    p Walker ({{rule.params.min === rule.params.max ? rule.params.min : rule.params.min + '-' + rule.params.max}} moves)
+    p {{displayMovementVectors(rule.params.vectors)}}
+  div(ng-if="rule.type === 'leaper'")
+    p Leaper
+    p {{rule.params.nmin}} ≤ <i>n</i> ≤ {{rule.params.nmax}}
+    p {{rule.params.mmin}} ≤ <i>m</i> ≤ {{rule.params.mmax}}
+  div(ng-if="rule.type === 'rider'")
+    p Rider
+    p {{displayMovementVectors(rule.params.vectors)}}
+  div(ng-if="rule.type === 'leaprider'") Leaprider
+    p Leaprider
+    p {{displayMovementVectors(rule.params.vectors)}}
+  div(ng-if="rule.type === 'exchange'") Exchange
+  div(ng-if="rule.type === 'retreat'") Retreat
+  div(ng-if="rule.type === 'catapult'")
+    p Catapult
+    p {{displayMovementVectors(rule.params.vectors)}}
+  div(ng-if="rule.type === 'grasshopper'") Grasshopper
+    p Grasshopper
+    p {{displayMovementVectors(rule.params.vectors)}}
+  div(ng-if="rule.type === 'leapfrog'")
+    p Leapfrog (limit {{rule.params.limit}})
+    p {{displayMovementVectors(rule.params.vectors)}}
+  div(ng-if="rule.type === 'movecapture'")
+    p <u>Move</u>
+    chess-nestable-move-rule-display(chess-rule="rule.params.move" chess-display-movement-vectors="displayMovementVectors")
+  div(ng-if="rule.type === 'combination'") Combination

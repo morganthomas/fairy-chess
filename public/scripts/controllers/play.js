@@ -1,16 +1,46 @@
+// Returns a string representing the given vector.
+var displayMovementVector = function(vec) {
+  return vec.row === 0 ?
+    (vec.col === 1 ? '→' : '←') :
+    (vec.row === 1 ?
+      (vec.col === 0 ? '↑' :
+        (vec.col === 1 ? '↗' : '↖')) :
+      (vec.col === 0 ? '↓' :
+        (vec.col === 1 ? '↘' : '↙')));
+}
+
+var displayMovementVectors = function(vectors) {
+  var symmetricVectors = makeHorizontalSymmetry(vectors);
+  return symmetricVectors.map(displayMovementVector).join('');
+}
+
 chessApp.directive('chessPieceTypeDisplay', function() {
   return {
     restrict: 'E',
     templateUrl: '/templates/piece-type-display',
     scope: {
-      pieceType: '=chessPieceType'
+      pieceType: '=chessPieceType',
+      displayMovementVectors: '=chessDisplayMovementVectors'
     }
   }
-})
+});
+
+chessApp.directive('moveRuleDisplay', function() {
+  return {
+    restrict: 'E',
+    templateUrl: '/templates/move-rule-display',
+    scope: {
+      rule: '=chessRule',
+      displayMovementVectors: '=chessDisplayMovementVectors'
+    }
+  }
+});
 
 chessApp.controller('playController', function($scope, $routeParams, me, challengeList, socket, $rootScope) {
   $scope.$parent.notAtHome = true;
   $scope.pieceTypeToDisplay = null; // set by chessBoard.js
+
+  $scope.displayMovementVectors = displayMovementVectors;
 
   // Checks if a move from startLoc to endLoc is legal. If so, updates the
   // game state to reflect the move and sends the move to the server.

@@ -1,1 +1,6 @@
-p {{pieceType}}
+p 
+  strong {{pieceType.name}}
+p(ng-if="pieceType.royal")
+  em Royal
+chess-move-rule-display(ng-if="pieceType" chess-rule="pieceType.movementRule"
+  chess-display-movement-vectors="displayMovementVectors")

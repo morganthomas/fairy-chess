@@ -338,10 +338,9 @@ var generateMovementVectors = function(options) {
 }
 
 // These are all movement vectors which can belong to vector sets (as defined above).
-var allMovementVectors = [
+var allMovementVectors =
   [{ row:  1, col: 0 }, { row:  1, col: 1 }, { row: 0, col: 1 },
-   { row: -1, col: 0 }, { row: -1, col: 1 }]
-];
+   { row: -1, col: 0 }, { row: -1, col: 1 }];
 
 // These movement types are "non-nestable," meaning that they can't appear inside
 // movement rules that contain movement rules. Presently all movement rules which
@@ -1484,7 +1483,7 @@ var semiLegalMovesForPieceType = {
         params: {
           to: loc
         }
-      }
+      };
     });
   },
 

@@ -5,7 +5,7 @@
 #chess-dashboard.col-md-4.panel.panel-primary
   .panel-heading <strong>{{players.white.username}}</strong> vs. <strong>{{players.black.username}}</strong>
   #piece-type-display.chess-dashboard-subpanel.panel.panel-primary
-    chess-piece-type-display(chess-piece-type="pieceTypeToDisplay")
+    chess-piece-type-display(chess-piece-type="pieceTypeToDisplay" chess-display-movement-vectors="displayMovementVectors")
   #captured-pieces.chess-dashboard-subpanel.panel.panel-primary
   div
   #move-record.chess-dashboard-subpanel.panel.panel-primary
