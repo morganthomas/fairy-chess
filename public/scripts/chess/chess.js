@@ -35,16 +35,16 @@ var mapFilter = function(array, f) {
 //  * A piece is an object with properties:
 //     loc
 //     color
-//     type: A number, which is an index into the array of piece types
+//     type: A number, which is an index into the array of piece types (to be explained)
 //       for this game.
-//     hasMovedYet: A boolean.
+//     hasMovedYet: A boolean, saying whether the piece has moved in this game.
 //  * A board is a two-dimensional array of pieces, with empty squares
 //    containing null.
 //  * A board info object is an object with properties:
 //     numRows
 //     numCols
 //     numPieceTypes
-//  * A game state represents the part of the description of a game that can
+//  * A game state is the part of the description of a game that can
 //    change over time. It has the following properties:
 //      board: The current board.
 //      playerToMove: The color of the player whose turn it is.
@@ -61,6 +61,7 @@ var mapFilter = function(array, f) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+// Black moves down the board; white moves up the board.
 var colorOrientation = function(color) {
   return color === 'black' ? -1 : 1;
 }
@@ -76,10 +77,12 @@ function locEq(loc1, loc2) {
          loc1.col === loc2.col;
 }
 
+// Gets the contents of the given location in the given board.
 var getSquare = function(board, loc) {
   return board[loc.row][loc.col];
 }
 
+// Sets the contents of the given location in the given board.
 var setSquare = function(board, loc, val) {
   board[loc.row][loc.col] = val;
 }
@@ -134,9 +137,9 @@ var getPieceType = function(game, piece) {
 //   PIECE TYPE GENERATION
 //
 // A movement rule is an object with properties:
-//  * type: A string (used for lookup in a table). The number of movement
+//  * type: A string (used for lookup in a table). The number of movement rule
 //      types is finite and fixed.
-//  * params: The parameters used by the movement type to say more specifically
+//  * params: An object. The parameters used by the movement rule type to say more specifically
 //      how the piece moves.
 //
 // A piece type is an object with properties:
@@ -145,18 +148,19 @@ var getPieceType = function(game, piece) {
 //  * icon: The icon name of the piece (a string).
 //  * royal: Whether the piece is royal (boolean).
 //
-// Currently we have the following movement types:
+// Currently we have the following movement rule types:
 //  * 'walker': Can do a number of one-square moves in nonuniform directions.
 //  * 'rider': Can move an unlimited distance along a vector.
-//  * 'leaper': Generalization of a knight.
-//  * 'leaprider': A leaper which can repeat its move.
+//  * 'leaper': Generalization of a knight, explained below.
+//  * 'leaprider': Moves like a leaper, but it can iterate its leap.
 //  * 'exchange': Swaps position with any friendly piece of a certain type.
 //  * 'retreat': Teleports to home row.
 //  * 'catapult': Moves by hopping over an adjacent piece and continuing along
 //      a vector.
 //  * 'grasshopper': Moves along a vector and must hop over a piece immediately
 //      before its destination.
-//  * 'leapfrog': Moves by repeated hops.
+//  * 'leapfrog': Moves by repeated hops, like a checkers piece capturing (but it does
+//      not capture the pieces it moves over).
 //  * 'movecapture': Has different rules for moving and for capturing.
 //  * 'combination': Has two different movement rules, both of which let it capture.
 //
@@ -189,12 +193,12 @@ var getPieceType = function(game, piece) {
 //
 // EXCHANGE:
 //  type: A piece type index, specifying the type it can exchange with.
-//  regularMove: A movement type, since the piece needs another way to move.
+//  regularMove: A movement rule, since the piece needs another way to move.
 //
 // RETREAT:
 //  squares: 'black', 'white', or 'both', specifying the kinds of squares on the
 //    home row that it can retreat to.
-//  regularMove: A movement type.
+//  regularMove: A movement rule.
 //
 // CATAPULT:
 //  vectors: A vector set.
@@ -207,35 +211,36 @@ var getPieceType = function(game, piece) {
 //  limit: Maximum number of leaps.
 //
 // MOVECAPTURE:
-//  move: A movement type.
-//  capture: A movement type.
+//  move: A movement rule.
+//  capture: A movement rule.
 //
 // COMBINATION:
-//  first: A movement type.
-//  second: A movement type.
+//  first: A movement rule.
+//  second: A movement rule.
 //
 // Functions for generating piece types can take three parameters: the board info,
 // their own index (that is, the index of the piece type being generated), and
 // an array of rule types to exclude.
 //
-// There are four types of pieces we generate: lowly, minor, major, and queen.
-// The difference between these types is their strength.. The king always has
-// its usual movement rules, because if it were different it would probably be
-// either too easy or too hard to make checkmate. The queen has very powerful
-// movement rules, but is sometimes royal.
+// There are four "ranks" of pieces we generate: lowly, minor, major, and queen.
+// The difference between these ranks is their strength.. The king always has
+// its usual movement rules, because if it were much different it would probably be
+// either too easy or too hard to make checkmate. The queen often has more powerful
+// movement rules than in chess, but is sometimes royal, making it risky to use in these
+// cases.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-var DEV_MODE = true;
+var CHECK_OPTION_WEIGHTS = true;
 
 // Takes an array of pairs of probabilities and values, returning a randomly
 // selected value according to the given weights. The weights should add up
-// to 1. Checks that weights add up to 1 if in development mode.
+// to 1. Checks that weights add up to 1 if requested above; useful for development.
 var randomSelect = function(selectionName, options) {
   var rand = Math.random();
   var val = 0.0;
 
-  if (DEV_MODE) {
+  if (CHECK_OPTION_WEIGHTS) {
     var sumOfWeights = options.reduce(function(start, next) {
       return start + next[1];
     }, 0);
@@ -274,8 +279,10 @@ var pickOneNoReplacement = function(array) {
 }
 
 // Function for generating functions for generating movement rules. Takes
-// a function for generating movement types, and a map from movement types
-// to functions for generating movement parameters.
+// a function for randomly generating movement rule types, and a map from movement rule types
+// to functions for randomly generating movement parameters. The function it returns generates
+// a movement rule given board info and the index of the piece type that the mvoement rule
+// will belong to, as well as an optional list of movement rule types which it's not allowed to use.
 var makeMovementRulesGenerator = function(generateMovementTypes, generateMovementParams) {
   return function(boardInfo, ownIndex, exclusions) {
     if (!exclusions) {
@@ -284,6 +291,7 @@ var makeMovementRulesGenerator = function(generateMovementTypes, generateMovemen
 
     var type;
 
+    // Just try random movement rule types until we get one that's allowed.
     do {
       type = generateMovementTypes();
     } while (_.includes(exclusions, type));
@@ -303,6 +311,8 @@ var generateMovementVectors = function(options) {
   var result = [];
 
   var forwardVectors = [{ row: 1, col: 0 }, { row: 1, col: 1 }];
+
+  // Recall that pickOneNoReplacement removes the item it selects from the array.
   result.push(pickOneNoReplacement(forwardVectors));
 
   var remainingVectors = [
@@ -318,6 +328,7 @@ var generateMovementVectors = function(options) {
   return result;
 }
 
+// These are all movement vectors which can belong to vector sets (as defined above).
 var allMovementVectors = [
   [{ row:  1, col: 0 }, { row:  1, col: 1 }, { row: 0, col: 1 },
    { row: -1, col: 0 }, { row: -1, col: 1 }]
@@ -331,7 +342,8 @@ var nonNestableMovementTypes = ['exchange', 'retreat', 'movecapture', 'combinati
 var nestableMovementTypes = ['walker', 'rider', 'leaper', 'leaprider',
   'catapult', 'grasshopper', 'leapfrog'];
 
-// This is the exchange parameter generator, which is common to all ranks.
+// This is the exchange parameter generator, which is common to all ranks. Takes a
+// function for randomly generating movement rules.
 var makeExchangeParameterGenerator = function(generateMovementRule) {
   return function(boardInfo, ownIndex, exclusions) {
     var options = _.range(boardInfo.numPieceTypes);
@@ -346,9 +358,9 @@ var makeExchangeParameterGenerator = function(generateMovementRule) {
 
 var makeRetreatParameterGenerator = function(generateMovementRule) {
   return function(boardInfo, ownIndex, exclusions) {
-    var options = ['black', 'white', 'both'];
+    var squaresOptions = ['black', 'white', 'both'];
     return {
-      squares: pickOne(options),
+      squares: pickOne(squaresOptions),
       regularMove: generateMovementRule(boardInfo, ownIndex,
         exclusions.concat(nonNestableMovementTypes))
     }
@@ -360,7 +372,7 @@ var makeMovecaptureParameterGenerator = function(generateMovementRule) {
    var move = generateMovementRule(boardInfo, ownIndex,
      exclusions.concat(nonNestableMovementTypes));
     var capture = generateMovementRule(boardInfo, ownIndex,
-      exclusions.concat(nonNestableMovementTypes).concat(move.type));
+      exclusions.concat(nonNestableMovementTypes).concat([move.type]));
 
    return {
      move: move,
@@ -385,7 +397,7 @@ var makeCombinationParameterGenerator = function(generateMovementRule) {
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Generate major movement rules
+// Generate movement rules for major pieces
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -530,7 +542,7 @@ var generateMajorMovementParams = {
   }
 
   // The rules for exchange, retreat, movecapture, and combination have to
-  // come later, to avoid circularity, because of how they are generated
+  // come just below, to avoid circularity, because of how they are generated
   // by combinators.
 }
 
@@ -609,7 +621,7 @@ var generateMinorMovementParams = {
   }
 
   // The rules for exchange, retreat, movecapture, and combination have to
-  // come later, to avoid circularity, because of how they are generated
+  // come just below, to avoid circularity, because of how they are generated
   // by combinators.
 }
 
@@ -1024,15 +1036,14 @@ var executeMoveInGame = function(game, move) {
 // who is moving in check. Our strategy for generating the legal moves in a given
 // state involves first generating the semi-legal moves in that state.
 //
-// This strategy relies on a map semiLegalMovesForPieceType from movement types to
-// functions. Given a movement type t, semiLegalMovesForPieceType[t](game, state, params, piece)
+// This strategy relies on a map semiLegalMovesForPieceType from movement rule types to
+// functions. Given a movement rule type t, semiLegalMovesForPieceType[t](game, state, params, piece)
 // produces all semi-legal moves for the given piece in the given state.
 //
-// Our strategy for generating most semi-legal moves (currently, all but exchange
-// moves) works as follows. First we generate the set of paths which the piece
-// can move along. A path is a series of unit vectors, showing the squares the
-// piece moves through in turn. This set of paths is always finite because
-// the board is finite.
+// Our strategy for generating most semi-legal moves works as follows. First we
+// generate the set of paths which the piece can move along. A path is a series of unit
+// vectors, showing the squares the piece moves through in turn. This set of paths is
+// always finite because the board is finite.
 //
 // Next, we specify a movement controller. The movement controller is a function
 //   control(game, state, piece, loc, data) -> [directive, newData]
@@ -1057,13 +1068,13 @@ var executeMoveInGame = function(game, move) {
 //   'continue no stop': The move is semi-legal, as long as this step is not
 //     the end of the path.
 //
-// The "non-nestable" movement types are movecapture, combination, exchange,
-// and retreat. All other movement types are "nestable." Exactly the nestable
-// movement types have their semi-legal moves generated by the method just
+// The "non-nestable" movement rule types are movecapture, combination, exchange,
+// and retreat. All other movement rule types are "nestable." Exactly the nestable
+// movement rule types have their semi-legal moves generated by the method just
 // described.
 //
 // To save computation during gameplay, we precompute all of the paths that
-// can be used for a given movement rule, and attach them to the piece type.
+// can be used for a given movement rule, and attach them to the rule object.
 // Once this is done, semiLegalMovesForPieceType[t] can be defined, for any
 // nestable type t, as simpleSelfmoveGenerator(controller) for some controller.
 // (See below.)
@@ -1073,7 +1084,7 @@ var executeMoveInGame = function(game, move) {
 // Therefore the precomputed paths are stored as an object of the form
 //   { white: <array of paths>, black: <array of paths> }
 //
-// To be used inside movecapture, the nestable movement types must be able
+// To be used inside movecapture, the nestable movement rule types must be able
 // to provide move generation functions for no-capture and capture-only
 // variants of themselves.
 //
@@ -1089,9 +1100,6 @@ var executeMoveInGame = function(game, move) {
 //
 // PATH SETS
 //
-
-// NOTE: We should statically generate, for each movement rule where it is
-// applicable, the set of paths which it can use.
 
 // This function takes an array of paths and produces all paths which are
 // the result of uniformly repeating one of the paths.
