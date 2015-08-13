@@ -54,24 +54,6 @@ function mouseToLoc(mouseX, mouseY) {
            col: Math.floor((mouseX - boardPos.left) / squareSize) };
 }
 
-// Gives the CSS classes for a square, based on its location.
-var squareClasses = function(loc) {
-  var classes = "";
-
-  if (loc.col === 0 && loc.row === 7) {
-    classes += "chess-board-origin ";
-  }
-
-  if (loc.row % 2 === loc.col % 2) {
-    classes += "black-square ";
-  } else {
-    classes += "white-square ";
-  }
-
-  return classes;
-};
-
-
 // This directive is attached to an element to trigger a function when the
 // element is finished loading. It is used to set up the jQuery event handlers
 // and display the chess board after Angular has finished rendering the chess
@@ -97,10 +79,35 @@ chessApp.directive( 'elemReady', function( $parse, $timeout ) {
 });
 
 chessApp.controller('chessBoardController', function($scope, challengeList) {
+  // game and highlightBoard are initialized in whenPlayControllerInitialized.
   var game = null;
+  // A board which contains 'true' in the locations which are highlighted.
+  $scope.highlightBoard = null;
+
   var processingPieceDrag = false;
   var dragStartLoc = null;
   var pieceBeingDragged = null;
+
+  // Gives the CSS classes for a square, based on its location.
+  var squareClasses = function(loc) {
+    var classes = "";
+
+    if (loc.col === 0 && loc.row === 7) {
+      classes += "chess-board-origin ";
+    }
+
+    if (loc.row % 2 === loc.col % 2) {
+      classes += "black-square ";
+    } else {
+      classes += "white-square ";
+    }
+
+    if (getSquare($scope.highlightBoard, loc)) {
+      classes += "chess-square-highlighted ";
+    }
+
+    return classes;
+  };
 
   $scope.squareClasses = squareClasses;
 
@@ -161,7 +168,32 @@ chessApp.controller('chessBoardController', function($scope, challengeList) {
     if (processingPieceDrag) {
       updateDraggedPiecePosition(moveEvent, false);
     }
-  };
+
+    $scope.$apply(function() {
+      forEachLoc($scope.highlightBoard, function(loc) {
+        setSquare($scope.highlightBoard, loc, null);
+      });
+
+      var state = getCurrentState(game);
+      var loc = mouseToLoc(moveEvent.pageX, moveEvent.pageY);
+
+      if (!isInBounds(state.board, loc)) {
+        return;
+      }
+
+      pieceBeingHovered = getSquare(state.board, loc);
+
+      if (pieceBeingHovered && !processingPieceDrag) {
+        // XXX: Show legal moves only
+        semiLegalMovesForPiece(game, state, pieceBeingHovered)
+          .forEach(function (move) {
+            // XXX: Assumes all moves have a "to" parameter. Currently correct,
+            // but may change.
+            setSquare($scope.highlightBoard, move.params.to, true);
+          });
+      }
+    })
+  }
 
   // The move event is trigged by the challengeList service when we receive
   // a new move in a game from the server.
@@ -169,27 +201,24 @@ chessApp.controller('chessBoardController', function($scope, challengeList) {
     refreshDisplay();
   });
 
-  // This handler gets called by the elem-ready directive on the chess board
-  // when the chess board is finished rendering.
-  $scope.boardReady = function() {
-    $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
-    $('body').on('mousemove', mousemoveHandler);
-    $("#chess-board").on("mouseup", mouseupHandler);
-    $(window).on('resize', refreshDisplay);
-  };
-
   var whenPlayControllerInitialized = function() {
     game = $scope.$parent.game;
+
+    $scope.highlightBoard = makeEmptyBoard(game.boardInfo);
 
     var numSquaresInitialized = 0;
 
     // Call this handler (triggered by an elem-ready directive) each time
     // a square gets rendered. Count up the number of squares rendered, and
-    // once all of them are rendered, refresh the display.
+    // once all of them are rendered, register event handlers and refresh the display.
     $scope.squareReady = function() {
       numSquaresInitialized++;
 
       if (numSquaresInitialized >= game.boardInfo.numRows * game.boardInfo.numCols) {
+        $("#chess-board").on("mousedown", ".chess-piece", mousedownHandler);
+        $('body').on('mousemove', mousemoveHandler);
+        $("#chess-board").on("mouseup", mouseupHandler);
+        $(window).on('resize', refreshDisplay);
         refreshDisplay();
       }
     }
@@ -209,5 +238,9 @@ chessApp.controller('chessBoardController', function($scope, challengeList) {
     $scope.$on('play-controller-initialized', whenPlayControllerInitialized);
   }
 
-  setTimeout(refreshDisplay, 1000);
+  // This handler gets called by the elem-ready directive on the chess board
+  // when the chess board is finished rendering. Remove if we don't want to use.
+  $scope.boardReady = function() {
+
+  };
 })

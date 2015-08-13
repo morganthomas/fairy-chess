@@ -1,6 +1,5 @@
 chessApp.controller('playController', function($scope, $routeParams, me, challengeList, socket, $rootScope) {
   $scope.$parent.notAtHome = true;
-  $scope.squareClasses = squareClasses;
 
   // Checks if a move from startLoc to endLoc is legal. If so, updates the
   // game state to reflect the move and sends the move to the server.

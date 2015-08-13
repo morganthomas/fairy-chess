@@ -32,6 +32,14 @@
   background-color: white;
 }
 
+.chess-square-highlighted.black-square {
+  background-color: #6D7780;
+}
+
+.chess-square-highlighted.white-square {
+  background-color: grey;
+}
+
 .chess-piece {
   position: absolute;
   width: 100%;
