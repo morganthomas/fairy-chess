@@ -6,7 +6,7 @@ Before demo day:
  [ ] Finish implementing move rules.
  [ ] Display move record.
  [ ] Display row/column numbers/letters.
- [ ] Display captured pieces.
+ [x] Display captured pieces.
  [ ] Fix issues.
  [ ] Get rid of XXXs.
  [ ] Write rulebook.
