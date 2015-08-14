@@ -58,11 +58,11 @@ chessApp.factory('challengeList', function(socket, $rootScope) {
       if (!challengeList[i].game) {
         continue;
       }
-      
+
       var game = challengeList[i].game;
       if (game._id === data.game &&
             getCurrentStateIndex(game) < data.index) {
-        executeMove(game, data.move);
+        executeMoveInGame(game, data.move);
         $rootScope.$broadcast('move', {move : game.moves.length});
       }
     }

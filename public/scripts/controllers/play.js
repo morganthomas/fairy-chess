@@ -60,12 +60,39 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
     return _.include(nestableMovementTypes, rule.type);
   }
 
+  // Say when user is in check
+  $scope.statusText = function() {
+    var state = getCurrentState($scope.game);
+
+    if (state.status === 'game not over') {
+      return _.capitalize(state.playerToMove) + ' to move.';
+    } else if (state.status === 'checkmate') {
+      return "Checkmate! " + _.capitalize(colorOpponent(state.playerToMove)) + " won.";
+    } else if (state.status === 'stalemate') {
+      return "Stalemate! " + _.capitalize(state.playerToMove) + " has no moves.";
+    }
+  }
+
+  $scope.statusClass = function() {
+    var state = getCurrentState($scope.game);
+
+    if (state.status === 'game not over') {
+      return 'alert-info';
+    } else if (state.status === 'checkmate') {
+      return 'alert-danger';
+    } else if (state.status === 'stalemate') {
+      return 'alert-danger';
+    }
+  }
+
   // Checks if a move from startLoc to endLoc is legal. If so, updates the
   // game state to reflect the move and sends the move to the server.
   $scope.performMove = function(startLoc, endLoc) {
-    var move = constructMove(getCurrentState($scope.game), startLoc, endLoc);
+    var state = getCurrentState($scope.game);
+    var move = constructMove(state, startLoc, endLoc);
 
-    if (moveIsLegalInCurrentState($scope.game, move)) {
+    if (moveIsLegalInCurrentState($scope.game, move) &&
+          me._id === $scope.game.players[state.playerToMove]) {
       executeMoveInGame($scope.game, move);
 
       socket.emit('move', {

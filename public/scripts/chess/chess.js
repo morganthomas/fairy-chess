@@ -66,6 +66,10 @@ var colorOrientation = function(color) {
   return color === 'black' ? -1 : 1;
 }
 
+var colorOpponent = function(color) {
+  return color === 'black' ? 'white' : 'black';
+}
+
 // Adds two locations.
 function locPlus(loc1, loc2) {
   return { row: loc1.row + loc2.row, col: loc1.col + loc2.col };
@@ -997,14 +1001,35 @@ var constructMove = function(state, from, to) {
   }
 }
 
+// This function computes the game status in a given state.
+var computeStatus = function(game, status) {
+  // XXX
+  return 'game not over';
+}
+
+// This function does some updating to a state that needs to happen after any move.
+var updateStateAfterMove = function(game, state) {
+  state.playerToMove = colorOpponent(state.playerToMove);
+  state.status = computeStatus(game, state);
+}
+
 var executeMoveType = {
   'selfmove': function(game, state, params, piece) {
     // XXX: Don't use _.cloneDeep; it's slow
     var newState = _.cloneDeep(state);
     var movedPiece = _.cloneDeep(piece);
+    var targetPiece = getSquare(state.board, params.to);
+
     movedPiece.loc = params.to;
     setSquare(newState.board, params.to, movedPiece);
     setSquare(newState.board, piece.loc, null);
+
+    if (targetPiece) {
+      newState.capturedPieces.push(targetPiece);
+    }
+
+    updateStateAfterMove(game, newState);
+
     return newState;
   },
 
@@ -1022,6 +1047,8 @@ var executeMoveType = {
 
     setSquare(newState.board, loc1, movedPiece2);
     setSquare(newState.board, loc2, movedPiece1);
+
+    updateStateAfterMove(game, newState);
 
     return newState;
   }
