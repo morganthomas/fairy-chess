@@ -1002,15 +1002,21 @@ var constructMove = function(state, from, to) {
 }
 
 // This function computes the game status in a given state.
-var computeStatus = function(game, status) {
-  // XXX
-  return 'game not over';
+var computeStatus = function(game, state) {
+  if (legalMoves(game, state).length > 0) {
+    return 'game not over';
+  } else {
+    if (isInCheck(game, state, state.playerToMove)) {
+      return 'checkmate';
+    } else {
+      return 'stalemate';
+    }
+  }
 }
 
 // This function does some updating to a state that needs to happen after any move.
 var updateStateAfterMove = function(game, state) {
   state.playerToMove = colorOpponent(state.playerToMove);
-  state.status = computeStatus(game, state);
 }
 
 var executeMoveType = {
@@ -1054,11 +1060,18 @@ var executeMoveType = {
   }
 };
 
+// Given a game, a state, and a move, assumes the move is legal, and performs the move,
+// returning the state that results.
+var executeMove = function(game, state, move) {
+  return executeMoveType[move.type](game, state, move.params, move.piece);
+}
+
 // Given a game and a move, assumes the move is legal, and performs the move,
 // updating the game destructively.
 var executeMoveInGame = function(game, move) {
   var state = getCurrentState(game);
-  var newState = executeMoveType[move.type](game, state, move.params, move.piece);
+  var newState = executeMove(game, state, move);
+  newState.status = computeStatus(game, newState);
   game.states.push(newState);
   game.moves.push(move);
 }
@@ -1389,7 +1402,7 @@ var regularMovementController =
   simpleMovementController('continue', 'stop here exclusive', 'stop here inclusive');
 
 var regularMovementControllers = {
-  regular: regularMovementControllers,
+  regular: regularMovementController,
   moveOnly: simpleMovementController('continue', 'stop here exclusive', 'stop here exclusive'),
   captureOnly: simpleMovementController('continue no stop', 'stop here exclusive', 'stop here inclusive')
 };
@@ -1497,21 +1510,24 @@ var semiLegalMovesForPieceType = {
   'leaprider': simpleSelfmoveGenerator(leaperMovementController),
 
   'exchange': function(game, state, params, piece) {
+    var regularGenerator = getNestableGenerator(params.regularMove, 'regular');
+
     var destLocs = allBoardLocs(state.board).filter(function(loc) {
       var otherPiece = getSquare(state.board, loc);
       return otherPiece && otherPiece.color === piece.color &&
         otherPiece.type === params.type;
     });
 
-    return destLocs.map(function(loc) {
-      return {
-        piece: piece,
-        type: 'exchange',
-        params: {
-          to: loc
-        }
-      };
-    });
+    return regularGenerator(game, state, params, piece, params.regularMove.paths[piece.color])
+      .concat(destLocs.map(function(loc) {
+        return {
+          piece: piece,
+          type: 'exchange',
+          params: {
+            to: loc
+          }
+        };
+      }));
   },
 
   'retreat': function(game, state, params, piece) {
@@ -1596,16 +1612,68 @@ var moveIsSemiLegal = function(game, state, move) {
     moveIsSemiLegalForPiece(game, state, move, move.piece);
 }
 
+var semiLegalMoves = function(game, state) {
+  return _.flatten(allBoardLocs(state.board).map(function(loc) {
+    var piece = getSquare(state.board, loc);
+    if (piece && piece.color === state.playerToMove) {
+      return semiLegalMovesForPiece(game, state, piece);
+    } else {
+      return [];
+    }
+  }));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
-// XXX
+// Check, game statuses, and move legality.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+// Says whether in the given state, the player to move can capture a royal piece.
+function playerToMoveCanCaptureRoyalPiece(game, state) {
+  var moves = semiLegalMoves(game, state);
+  var enemyRoyalPieces = [];
+  var result = false;
+
+  forEachLoc(state.board, function(loc) {
+    var piece = getSquare(state.board, loc);
+
+    if (piece && piece.color === colorOpponent(state.playerToMove) &&
+        getPieceType(game, piece).royal) {
+      enemyRoyalPieces.push(piece);
+    }
+  })
+
+  return _.some(moves, function(move) {
+    return _.some(enemyRoyalPieces, function(piece) {
+      return move.type === 'selfmove' && _.isEqual(piece.loc, move.params.to);
+    });
+  })
+}
+
+// Says whether in the given state, the given player is in check.
+function isInCheck(game, state, playerColor) {
+  var newState = _.clone(state);
+  newState.playerToMove = colorOpponent(playerColor);
+  return playerToMoveCanCaptureRoyalPiece(game, newState);
+}
+
+// Given a game and a state, lists all legal moves for the player to move.
+var legalMoves = function(game, state) {
+  return semiLegalMoves(game, state).filter(function(move) {
+    var newState = executeMove(game, state, move);
+    return !isInCheck(game, state, state.playerToMove);
+  });
+}
+
 // Given a game and a move, says whether the move is legal in the given state.
 var moveIsLegal = function(game, state, move) {
-  // XXX
-  return moveIsSemiLegal(game, state, move);
+  if (moveIsSemiLegal(game, state, move)) {
+    var newState = executeMove(game, state, move);
+    return !isInCheck(game, newState, state.playerToMove);
+  } else {
+    return false;
+  }
 }
 
 var moveIsLegalInCurrentState = function(game, move) {

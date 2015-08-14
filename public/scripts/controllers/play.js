@@ -65,7 +65,12 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
     var state = getCurrentState($scope.game);
 
     if (state.status === 'game not over') {
-      return _.capitalize(state.playerToMove) + ' to move.';
+      if (!isInCheck($scope.game, state, state.playerToMove)) {
+        return _.capitalize(state.playerToMove) + ' to move.';
+      } else {
+        return _.capitalize(state.playerToMove) + ' to move; ' +
+          state.playerToMove + ' is in check!';
+      }
     } else if (state.status === 'checkmate') {
       return "Checkmate! " + _.capitalize(colorOpponent(state.playerToMove)) + " won.";
     } else if (state.status === 'stalemate') {
@@ -77,7 +82,11 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
     var state = getCurrentState($scope.game);
 
     if (state.status === 'game not over') {
-      return 'alert-info';
+      if (!isInCheck($scope.game, state, state.playerToMove)) {
+        return 'alert-info';
+      } else {
+        return 'alert-warning';
+      }
     } else if (state.status === 'checkmate') {
       return 'alert-danger';
     } else if (state.status === 'stalemate') {
