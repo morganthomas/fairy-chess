@@ -85,14 +85,20 @@ body {
 
 #chess-dashboard {
   /*display: inline-block;*/
-  /*float: right;*/
-  /*width: 300px;*/
   padding: 0;
-  margin-top: 1em;
+  min-height: 475px;
+  /*margin-top: 70px;*/
 }
 
 .chess-dashboard-subpanel {
   margin: 20px;
+}
+
+#piece-type-display {
+  /*width: 100%;*/
+  padding: 10px;
+  z-index: 2;
+  min-height: 392px;
 }
 
 #captured-pieces {

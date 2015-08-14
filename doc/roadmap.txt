@@ -1,0 +1,14 @@
+Before demo day:
+ [ ] Make players move in turns.
+ [ ] Implement check, checkmate, and stalemate.
+ [ ] Implement game ending logic.
+ [ ] Finish implementing move rules.
+ [ ] Display move record.
+ [ ] Display captured pieces.
+ [ ] Fix issues.
+ [ ] Write rulebook.
+ [ ] Test.
+ [ ] Deploy.
+
+Before my batch:
+ [ ] Make video demo.

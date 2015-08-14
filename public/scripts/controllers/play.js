@@ -65,7 +65,7 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
   $scope.performMove = function(startLoc, endLoc) {
     var move = constructMove(getCurrentState($scope.game), startLoc, endLoc);
 
-    if (moveIsLegal($scope.game, move)) {
+    if (moveIsLegalInCurrentState($scope.game, move)) {
       executeMoveInGame($scope.game, move);
 
       socket.emit('move', {

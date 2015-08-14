@@ -216,7 +216,7 @@ var doMove = function(connections, socket, user, data) {
        return fail('Database error finding game.');
      }
 
-     if (chess.moveIsLegal(game, data.move)) {
+     if (chess.moveIsLegalInCurrentState(game, data.move)) {
        chess.executeMoveInGame(game, data.move);
 
        game.save(function(err) {

@@ -1544,6 +1544,13 @@ var semiLegalMovesForPiece = function(game, state, piece) {
     (game, state, movementRule.params, piece);
 }
 
+var moveIsSemiLegalForPiece = function(game, state, move, piece) {
+  return !!_.find(semiLegalMovesForPiece(game, state, move.piece),
+    function(otherMove) {
+      return _.isEqual(move, otherMove);
+    });
+}
+
 var testSemiLegalMoves = function() {
   var game = generateGame();
   var state = getCurrentState(game);
@@ -1557,12 +1564,9 @@ var testSemiLegalMoves = function() {
   })
 }
 
-var moveIsSemiLegal = function(game, move) {
-  console.log(semiLegalMovesForPiece(game, getCurrentState(game), move.piece))
-  return !!_.find(semiLegalMovesForPiece(game, getCurrentState(game), move.piece),
-    function(otherMove) {
-      return _.isEqual(move, otherMove);
-    });
+var moveIsSemiLegal = function(game, state, move) {
+  return move.piece.color === state.playerToMove &&
+    moveIsSemiLegalForPiece(game, state, move, move.piece);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1571,10 +1575,14 @@ var moveIsSemiLegal = function(game, move) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-// Given a game and a move, says whether the move is legal in the current state.
-var moveIsLegal = function(game, move) {
+// Given a game and a move, says whether the move is legal in the given state.
+var moveIsLegal = function(game, state, move) {
   // XXX
-  return moveIsSemiLegal(game, move);
+  return moveIsSemiLegal(game, state, move);
+}
+
+var moveIsLegalInCurrentState = function(game, move) {
+  return moveIsLegal(game, getCurrentState(game), move);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1584,7 +1592,7 @@ var moveIsLegal = function(game, move) {
 if (typeof window === 'undefined') {
   module.exports = {
     generateGame: generateGame,
-    moveIsLegal: moveIsLegal,
+    moveIsLegalInCurrentState: moveIsLegalInCurrentState,
     executeMoveInGame: executeMoveInGame
   };
 }

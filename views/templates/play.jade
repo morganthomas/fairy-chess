@@ -2,33 +2,33 @@
   #chess-board(ng-controller="chessBoardController" elem-ready="boardReady()")
     .chess-square(ng-repeat="loc in boardLocs" class="{{squareClasses(loc)}}" elem-ready="squareReady()")
 
-#chess-dashboard.col-md-4.panel.panel-primary
-  .panel-heading <strong>{{players.white.username}}</strong> vs. <strong>{{players.black.username}}</strong>
-  #piece-type-display.chess-dashboard-subpanel.panel.panel-primary
-    chess-piece-type-display(chess-piece-type="pieceTypeToDisplay"
-      chess-display-movement-vectors="displayMovementVectors" chess-is-nestable="isNestable" chess-game="game")
-  #captured-pieces.chess-dashboard-subpanel.panel.panel-primary
-  div
-  #move-record.chess-dashboard-subpanel.panel.panel-primary
-    .panel-body
-      table#move-record-table.table
-        thead
-          tr
-            th #
-            th
-              img.player-indicator(src='images/WhiteKing.png')
-            th
-              img.player-indicator(src='images/BlackKing.png')
-        tbody
-    .panel-footer.noselect
-      .panel-footer-row-notlast
-        button#to-start-button.btn.btn-default
-          i.fa.fa-fast-backward
-        button#step-backward-button.btn.btn-default
-          i.fa.fa-step-backward
-        button#current-move-button.btn.btn-default
-          i.fa.fa-home
-        button#step-forward-button.btn.btn-default
-          i.fa.fa-step-forward
-        button#to-end-button.btn.btn-default
-          i.fa.fa-fast-forward
+.col-md-4
+  #chess-dashboard.panel.panel-primary
+    .panel-heading <strong>{{players.white.username}}</strong> vs. <strong>{{players.black.username}}</strong>
+    #piece-type-display.chess-dashboard-subpanel.panel.panel-primary(ng-show="pieceTypeToDisplay")
+      chess-piece-type-display(chess-piece-type="pieceTypeToDisplay"
+        chess-display-movement-vectors="displayMovementVectors" chess-is-nestable="isNestable" chess-game="game")
+    #captured-pieces.chess-dashboard-subpanel.panel.panel-primary(ng-show="!pieceTypeToDisplay")
+    #move-record.chess-dashboard-subpanel.panel.panel-primary(ng-show="!pieceTypeToDisplay")
+      .panel-body
+        table#move-record-table.table
+          thead
+            tr
+              th #
+              th
+                img.player-indicator(src='images/WhiteKing.png')
+              th
+                img.player-indicator(src='images/BlackKing.png')
+          tbody
+      //- .panel-footer.noselect
+      //-   .panel-footer-row-notlast
+      //-     button#to-start-button.btn.btn-default
+      //-       i.fa.fa-fast-backward
+      //-     button#step-backward-button.btn.btn-default
+      //-       i.fa.fa-step-backward
+      //-     button#current-move-button.btn.btn-default
+      //-       i.fa.fa-home
+      //-     button#step-forward-button.btn.btn-default
+      //-       i.fa.fa-step-forward
+      //-     button#to-end-button.btn.btn-default
+      //-       i.fa.fa-fast-forward
