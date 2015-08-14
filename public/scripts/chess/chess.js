@@ -1620,6 +1620,7 @@ if (typeof window === 'undefined') {
   module.exports = {
     generateGame: generateGame,
     moveIsLegalInCurrentState: moveIsLegalInCurrentState,
-    executeMoveInGame: executeMoveInGame
+    executeMoveInGame: executeMoveInGame,
+    getCurrentState: getCurrentState
   };
 }
