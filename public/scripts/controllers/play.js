@@ -62,6 +62,10 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
 
   // Say when user is in check
   $scope.statusText = function() {
+    if (!$scope.game) {
+      return '';
+    }
+
     var state = getCurrentState($scope.game);
 
     if (state.status === 'game not over') {
@@ -79,6 +83,10 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
   }
 
   $scope.statusClass = function() {
+    if (!$scope.game) {
+      return '';
+    }
+
     var state = getCurrentState($scope.game);
 
     if (state.status === 'game not over') {

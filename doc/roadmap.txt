@@ -2,9 +2,10 @@ Before demo day:
  [x] Make players move in turns.
  [x] Display game status.
  [x] Implement check, checkmate, and stalemate.
- [ ] Implement game ending logic.
+ [x] Implement game ending logic.
  [ ] Finish implementing move rules.
  [ ] Display move record.
+ [ ] Display row/column numbers/letters.
  [ ] Display captured pieces.
  [ ] Fix issues.
  [ ] Get rid of XXXs.
