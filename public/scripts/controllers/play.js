@@ -20,15 +20,30 @@ chessApp.directive('chessPieceTypeDisplay', function() {
     templateUrl: '/templates/piece-type-display',
     scope: {
       pieceType: '=chessPieceType',
-      displayMovementVectors: '=chessDisplayMovementVectors'
+      displayMovementVectors: '=chessDisplayMovementVectors',
+      isNestable: '=chessIsNestable',
+      game: '=chessGame'
     }
   }
 });
 
-chessApp.directive('moveRuleDisplay', function() {
+chessApp.directive('chessMoveRuleDisplay', function() {
   return {
     restrict: 'E',
     templateUrl: '/templates/move-rule-display',
+    scope: {
+      rule: '=chessRule',
+      displayMovementVectors: '=chessDisplayMovementVectors',
+      isNestable: '=chessIsNestable',
+      game: '=chessGame'
+    }
+  }
+});
+
+chessApp.directive('chessNestableMoveRuleDisplay', function() {
+  return {
+    restrict: 'E',
+    templateUrl: '/templates/nestable-move-rule-display',
     scope: {
       rule: '=chessRule',
       displayMovementVectors: '=chessDisplayMovementVectors'
@@ -41,6 +56,9 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
   $scope.pieceTypeToDisplay = null; // set by chessBoard.js
 
   $scope.displayMovementVectors = displayMovementVectors;
+  $scope.isNestable = function(rule) {
+    return _.include(nestableMovementTypes, rule.type);
+  }
 
   // Checks if a move from startLoc to endLoc is legal. If so, updates the
   // game state to reflect the move and sends the move to the server.
