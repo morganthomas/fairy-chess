@@ -120,6 +120,23 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
     }
   }
 
+  var capturedPieceImages = function(color) {
+    return function() {
+      if (!$scope.game) {
+        return [];
+      }
+
+      return getCurrentState($scope.game).capturedPieces.filter(function(piece) {
+        return piece.color === color;
+      }).map(function(piece) {
+        return pieceImageName($scope.game, piece)
+      })  
+    }
+  }
+
+  $scope.blackCapturedPieceImages = capturedPieceImages('black');
+  $scope.whiteCapturedPieceImages = capturedPieceImages('white');
+
   whenActiveChallengesLoaded($scope, challengeList, function() {
     var challengeId = $routeParams.id;
     var challenge = _.find(challengeList, function(challenge) {

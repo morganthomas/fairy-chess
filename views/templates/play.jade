@@ -11,6 +11,12 @@
       chess-piece-type-display(chess-piece-type="pieceTypeToDisplay"
         chess-display-movement-vectors="displayMovementVectors" chess-is-nestable="isNestable" chess-game="game")
     #captured-pieces.chess-dashboard-subpanel.panel.panel-primary(ng-show="!pieceTypeToDisplay")
+      div
+        span.captured-piece(ng-repeat="pieceImage in whiteCapturedPieceImages()")
+          img(src="{{pieceImage}}")
+      div
+        span.captured-piece(ng-repeat="pieceImage in blackCapturedPieceImages()")
+          img(src="{{pieceImage}}")
     #move-record.chess-dashboard-subpanel.panel.panel-primary(ng-show="!pieceTypeToDisplay")
       .panel-body
         table#move-record-table.table
