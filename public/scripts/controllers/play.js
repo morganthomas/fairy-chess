@@ -130,7 +130,7 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
         return piece.color === color;
       }).map(function(piece) {
         return pieceImageName($scope.game, piece)
-      })  
+      })
     }
   }
 
@@ -152,6 +152,8 @@ chessApp.controller('playController', function($scope, $routeParams, me, challen
     var whitePlayer = challenge.sender._id === $scope.game.players.white ? 0 : 1;
     $scope.players.white = players[whitePlayer];
     $scope.players.black = players[1 - whitePlayer];
+
+    $scope.moveRecord = $scope.game.moves;
 
     $scope.playControllerInitialized = true;
     $scope.$broadcast('play-controller-initialized');
