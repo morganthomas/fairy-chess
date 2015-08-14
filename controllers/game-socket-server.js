@@ -90,7 +90,7 @@ var sendInitialState = function(socket, user) {
 
   Challenge.find({
     $and: [{$or: [ { receiver: user.id }, { sender: user.id } ]},
-           { status: { $in: ['open', 'accepted'] } }]
+           { status: { $in: ['open', 'accepted', 'completed'] } }]
     })
     .populate('receiver sender game')
     .exec(function(err, challenges) {
@@ -220,14 +220,44 @@ var doMove = function(connections, socket, user, data) {
           user._id.equals(game.players[chess.getCurrentState(game).playerToMove])) {
        chess.executeMoveInGame(game, data.move);
 
-       game.save(function(err) {
-         if (err) {
-           return fail('Database error saving game.');
-         }
+       var finish = function(gameCompleted, challenge) {
+         game.save(function(err) {
+           if (err) {
+             return fail('Database error saving game.');
+           }
 
-         emitToUsers(connections, [game.players.white, game.players.black],
-           'move', data);
-       })
+           emitToUsers(connections, [game.players.white, game.players.black],
+             'move', data);
+
+           if (gameCompleted) {
+             emitToUsers(connections, [game.players.white, game.players.black],
+              'challenge-status-change', {
+                id: challenge.id,
+                status: challenge.status
+              });
+           }
+         })
+       }
+
+       if (chess.getCurrentState(game).status === 'game not over') {
+         finish(false);
+       } else {
+         Challenge.findOne({ game: game._id }, function(err, challenge) {
+           if (err || !challenge) {
+             return fail('Database error finding challenge.');
+           }
+
+           challenge.status = 'completed';
+
+           challenge.save(function(err) {
+             if (err) {
+               return fail('Database error updating challenge.')
+             }
+
+             finish(true, challenge);
+           })
+         });
+       }
      } else {
        return fail('Move is illegal.');
      }
