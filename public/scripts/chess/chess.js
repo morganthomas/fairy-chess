@@ -1335,8 +1335,9 @@ var makeLeapriderPaths = function(game, color, params) {
   return uniformUnlimitedRepeatPaths(game, makeLeaperPaths(game, color, params));
 }
 
-var makePathsStub = function() {
-  return [];
+var makeLeapfrogPaths = function(game, color, params) {
+  return nonuniformLimitedRepeatPaths(game,
+    seedPathsFromUnitVectors(color, params.vectors), 2, params.limit * 2)
 }
 
 // Path computing functions for all nestable types.
@@ -1345,9 +1346,9 @@ var pathComputingFunctions = {
   'rider': makeRiderPaths,
   'leaper': makeLeaperPaths,
   'leaprider': makeLeapriderPaths,
-  'catapult': makePathsStub,
-  'grasshopper': makePathsStub,
-  'leapfrog': makePathsStub
+  'catapult': makeRiderPaths,
+  'grasshopper': makeRiderPaths,
+  'leapfrog': makeLeapfrogPaths
 }
 
 // Computes the path sets for the various piece types in a game, and installs
@@ -1426,14 +1427,60 @@ var leaperMovementControllers = {
   captureOnly: simpleMovementController('continue no stop', 'continue no stop', 'continue')
 };
 
-var dummyMovementController = function() {
-  return 'stop here exclusive';
+var makeCatapultMovementController = function(canCapture, canMove) {
+  return function(game, state, piece, loc, data) {
+    var dest = getSquare(state.board, loc);
+
+    if (data === null && dest) { // null is the start state given by simpleMovementController
+      return ['continue no stop', 'hopped'];
+    } else if (data === 'hopped') {
+      if (!dest) {
+        return [canMove ? 'continue' : 'continue no stop', 'hopped'];
+      } else if (canCapture && dest.color === colorOpponent(piece.color)) {
+        return ['stop here inclusive', 'captured'];
+      }
+    }
+
+    return ['stop here exclusive', 'invalid'];
+  }
 }
 
-var dummyMovementControllers = {
-  regular: dummyMovementController,
-  moveOnly: dummyMovementController,
-  captureOnly: dummyMovementController
+var makeGrasshopperMovementController = function(canCapture, canMove) {
+  return function(game, state, piece, loc, data) {
+    var dest = getSquare(state.board, loc);
+
+    if (data === null) {
+      if (!dest) {
+        return ['continue no stop', null];
+      } else {
+        return ['continue no stop', 'hopped'];
+      }
+    } else if (data === 'hopped') {
+      if ((canMove && !dest) || (canCapture && dest.color === colorOpponent(piece.color))) {
+        return ['stop here inclusive', 'done'];
+      }
+    }
+
+    return ['stop here exclusive', 'invalid'];
+  }
+}
+
+var makeLeapfrogMovementController = function(canCapture, canMove) {
+  return function(game, state, piece, loc, data) {
+    var dest = getSquare(state.board, loc);
+
+    if (data === null && dest) {
+      return ['continue no stop', 'hopped'];
+    } else if (data === 'hopped') {
+      if (!dest) {
+        return [canMove ? 'continue' : 'continue no stop', null];
+      } else if (canCapture && dest.color === colorOpponent(piece.color)) {
+        return ['stop here inclusive', 'captured'];
+      }
+    }
+
+    return ['stop here exclusive', 'invalid'];
+  }
 }
 
 var nestableMoveControllers = {
@@ -1441,9 +1488,21 @@ var nestableMoveControllers = {
   'rider': regularMovementControllers,
   'leaper': leaperMovementControllers,
   'leaprider': leaperMovementControllers,
-  'catapult': dummyMovementControllers,
-  'grasshopper': dummyMovementControllers,
-  'leapfrog': dummyMovementControllers
+  'catapult': {
+    regular: makeCatapultMovementController(true, true),
+    captureOnly: makeCatapultMovementController(true, false),
+    moveOnly: makeCatapultMovementController(false, true)
+  },
+  'grasshopper': {
+    regular: makeGrasshopperMovementController(true, true),
+    captureOnly: makeGrasshopperMovementController(true, false),
+    moveOnly: makeGrasshopperMovementController(false, true)
+  },
+  'leapfrog': {
+    regular: makeLeapfrogMovementController(true, true),
+    captureOnly: makeLeapfrogMovementController(true, false),
+    moveOnly: makeLeapfrogMovementController(false, true)
+  }
 }
 
 // XXX: hopper controllers
@@ -1570,9 +1629,9 @@ var semiLegalMovesForPieceType = {
       .concat(retreatMoves);
   },
 
-  'catapult': stubMoveGenerator,
-  'grasshopper': stubMoveGenerator,
-  'leapfrog': stubMoveGenerator,
+  'catapult': simpleSelfmoveGenerator(makeCatapultMovementController(true, true)),
+  'grasshopper': simpleSelfmoveGenerator(makeGrasshopperMovementController(true, true)),
+  'leapfrog': simpleSelfmoveGenerator(makeLeapfrogMovementController(true, true)),
 
   'movecapture': function(game, state, params, piece) {
     var captureGenerator = getNestableGenerator(params.capture, 'captureOnly');

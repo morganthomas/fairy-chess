@@ -3,7 +3,7 @@ Before demo day:
  [x] Display game status.
  [x] Implement check, checkmate, and stalemate.
  [x] Implement game ending logic.
- [ ] Finish implementing move rules.
+ [x] Finish implementing move rules.
  [x] Display move record.
  [x] Display row/column numbers/letters.
  [x] Display captured pieces.

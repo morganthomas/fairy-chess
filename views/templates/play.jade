@@ -16,10 +16,10 @@
         chess-display-movement-vectors="displayMovementVectors" chess-is-nestable="isNestable" chess-game="game")
     #captured-pieces.chess-dashboard-subpanel.panel.panel-primary(ng-show="!pieceTypeToDisplay")
       div
-        span.captured-piece(ng-repeat="pieceImage in whiteCapturedPieceImages()")
+        span.captured-piece(ng-repeat="pieceImage in whiteCapturedPieceImages() track by $index")
           img(src="{{pieceImage}}")
       div
-        span.captured-piece(ng-repeat="pieceImage in blackCapturedPieceImages()")
+        span.captured-piece(ng-repeat="pieceImage in blackCapturedPieceImages() track by $index")
           img(src="{{pieceImage}}")
     #move-record.chess-dashboard-subpanel.panel.panel-primary(ng-show="!pieceTypeToDisplay")
       .panel-body
