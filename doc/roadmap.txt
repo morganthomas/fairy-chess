@@ -5,7 +5,7 @@ Before demo day:
  [x] Implement game ending logic.
  [ ] Finish implementing move rules.
  [x] Display move record.
- [ ] Display row/column numbers/letters.
+ [x] Display row/column numbers/letters.
  [x] Display captured pieces.
  [ ] Make nice front page.
  [ ] Fix issues.

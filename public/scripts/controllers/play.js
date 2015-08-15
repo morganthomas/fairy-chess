@@ -58,7 +58,7 @@ chessApp.filter('moveDisplayFilter', function() {
   return function(moves) {
     // Only return a new array when the move list changes (which happens iff
     // the length changes). This prevents an infinite digest loop.
-    if (moves.length === lastLength) {
+    if (moves && moves.length === lastLength) {
       return lastResult;
     } else {
       lastLength = moves.length;

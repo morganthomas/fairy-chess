@@ -6,9 +6,9 @@
 }
 
 #chess-board {
-  margin: auto;
+  margin: 1.5em;
   position: relative;
-  overflow: hidden;
+  overflow: initial;
   max-width: 90vmin;
 }
 
@@ -22,6 +22,34 @@
   width: 12.5%;
   padding-bottom: 12.5%;
   position: relative;
+}
+
+.col-label {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+}
+
+.col-label-top {
+  top: -1.5em;
+}
+
+.col-label-bot {
+  bottom: -1.5em;
+}
+
+.row-label {
+  position: absolute;
+  margin-top: 50%;
+  top: -0.5em;
+}
+
+.row-label-left {
+  left: -1.25em;
+}
+
+.row-label-right {
+  right: -1.25em;
 }
 
 .black-square {

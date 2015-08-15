@@ -224,6 +224,7 @@ chessApp.controller('chessBoardController', function($scope, challengeList, me) 
 
   var whenPlayControllerInitialized = function() {
     game = $scope.$parent.game;
+    $scope.game = game;
     $scope.myColor = game.players.black === me._id ? 'black' : 'white';
 
     // This is in here so that this function doesn't run until $scope.myColor,
@@ -267,6 +268,8 @@ chessApp.controller('chessBoardController', function($scope, challengeList, me) 
         $scope.boardLocs.push({ row: row, col: col })
       });
     });
+
+    $scope.colLabels = "abcdefghijklmnopqrstuvwxyz";
   }
 
   if ($scope.$parent.playControllerInitialized) {
