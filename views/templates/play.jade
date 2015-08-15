@@ -23,14 +23,15 @@
           thead
             tr
               th #
-              th Move
-              //- th
-              //-   img.player-indicator(src='images/WhiteKing.png')
-              //- th
-              //-   img.player-indicator(src='images/BlackKing.png')
+              th
+                img.player-indicator(src='images/WhiteKing.png')
+              th
+                img.player-indicator(src='images/BlackKing.png')
           tbody
-            tr(ng-repeat="move in moveRecord")
-              td(colspan="3") {{move}}
+            tr(ng-repeat="move in moveRecord | moveDisplayFilter")
+              td {{$index+1}}
+              td {{move[0]}}
+              td {{move[1]}}
       //- .panel-footer.noselect
       //-   .panel-footer-row-notlast
       //-     button#to-start-button.btn.btn-default

@@ -952,6 +952,8 @@ var generateGame = function(player1, player2) {
 //  type: A string.
 //  params: A key-value map.
 //  piece: The piece doing the move.
+// After being executed by executeMoveInGame, a move also gains an
+// algebraicNotation property containing its algebraic notation as a string.
 //
 // Presently, we have two move types:
 //  'selfmove': A move whcih simply moves the piece doing the move, capturing any
@@ -968,6 +970,13 @@ var generateGame = function(player1, player2) {
 //  to: A location, saying where the piece is moving to.
 //
 ///////////////////////////////////////////////////////////////////////////////
+
+// Returns true if the two moves are (semantically) equal. Different from
+// _.isEqual because a move can have an algebraicNotation property, and otherwise
+// identical moves where one has this property and the other lacks it are equal.
+var moveEq = function(move1, move2) {
+  return move1.type === move2.type && _.isEqual(move1.params, move2.params);
+}
 
 // Given a state and "from" and "to" locations, constructs a move which tries to
 // be a legal move based on it. There is always at most one legal move in a given
@@ -1073,6 +1082,7 @@ var executeMoveInGame = function(game, move) {
   var newState = executeMove(game, state, move);
   newState.status = computeStatus(game, newState);
   game.states.push(newState);
+  move.algebraicNotation = displayMoveAlgebraic(game, state, move);
   game.moves.push(move);
 }
 
@@ -1590,7 +1600,7 @@ var semiLegalMovesForPiece = function(game, state, piece) {
 var moveIsSemiLegalForPiece = function(game, state, move, piece) {
   return !!_.find(semiLegalMovesForPiece(game, state, move.piece),
     function(otherMove) {
-      return _.isEqual(move, otherMove);
+      return moveEq(move, otherMove);
     });
 }
 
@@ -1678,6 +1688,70 @@ var moveIsLegal = function(game, state, move) {
 
 var moveIsLegalInCurrentState = function(game, move) {
   return moveIsLegal(game, getCurrentState(game), move);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Move notations. Currently, we use chess algebraic notation, since our
+// board and pieces are compatible with this.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+function displayRowAlgebraic(rowNum) {
+  return (rowNum + 1).toString();
+}
+
+function displayColAlgebraic(colNum) {
+  var COL_NAMES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+  return COL_NAMES[colNum];
+}
+
+function displayLocAlgebraic(loc) {
+  return displayColAlgebraic(loc.col) + displayRowAlgebraic(loc.row);
+}
+
+var typeAlgebraicNotations = ['','R','N','B','Q','K'];
+
+function displayPieceTypeAlgebraic(type) {
+  // XXX: Depends on details of how piece types are currently generated.
+  // This is OK because we can't change the piece type generation code
+  // without rethinking how this function works anyway.
+  return typeAlgebraicNotations[type];
+}
+
+// Returns the algebraic notation for the given move from the given
+// state.
+function displayMoveAlgebraic(game, state, move) {
+  // The moves which have the same destination as this move and the
+  // same rank of piece.
+  var ambiguousMoves = legalMoves(game, state).filter(function(otherMove) {
+    return _.isEqual(move.params.to, otherMove.params.to) &&
+      move.piece.type === otherMove.piece.type &&
+      !moveEq(move, otherMove);
+  });
+
+  var disambiguationString;
+
+  if (ambiguousMoves.length > 0) {
+    if (_.each(ambiguousMoves.map(function(otherMove) {
+          return otherMove.piece.loc.col !== move.piece.loc.col;
+        }))) {
+      disambiguationString = displayColAlgebraic(move.piece.loc.col);
+    } else if (_.each(ambiguousMoves.map(function(otherMove) {
+          return otherMove.piece.loc.row !== move.piece.loc.row;
+        }))) {
+      disambiguationString = displayRowAlgebraic(move.piece.loc.row);
+    } else {
+      disambiguationString = displayLocAlgebraic(move.piece.loc);
+    }
+  } else {
+    disambiguationString = '';
+  }
+
+  // XXX: capture notation?
+  return displayPieceTypeAlgebraic(move.piece.type) +
+    disambiguationString +
+    displayLocAlgebraic(move.params.to);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

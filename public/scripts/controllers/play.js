@@ -51,6 +51,28 @@ chessApp.directive('chessNestableMoveRuleDisplay', function() {
   }
 });
 
+chessApp.filter('moveDisplayFilter', function() {
+  var lastResult = [];
+  var lastLength = 0;
+
+  return function(moves) {
+    // Only return a new array when the move list changes (which happens iff
+    // the length changes). This prevents an infinite digest loop.
+    if (moves.length === lastLength) {
+      return lastResult;
+    } else {
+      lastLength = moves.length;
+
+      var moveNotations = moves.map(function(move) {
+        return move.algebraicNotation;
+      });
+
+      lastResult = _.chunk(moveNotations, 2);
+      return lastResult;
+    }
+  }
+})
+
 chessApp.controller('playController', function($scope, $routeParams, me, challengeList, socket, $rootScope) {
   $scope.$parent.notAtHome = true;
   $scope.pieceTypeToDisplay = null; // set by chessBoard.js
