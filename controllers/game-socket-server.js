@@ -5,14 +5,8 @@ var _ = require('../public/scripts/lib/lodash');
 var passport = require('passport');
 var chess = require('../public/scripts/chess/chess.js');
 
-// Constructs a new Game object, with the two specified players (given as user IDs),
-// who are randomly selected to be black and white.
-var newGame = function(player1, player2) {
-  return new Game(chess.generateGame(player1, player2));
-}
-
 // Emits the given message to the given users, if they are connected. Takes the
-// array of connections and an array of user ID hex strings.
+// connections map and an array of user ID hex strings.
 var emitToUsers = function(connections, users, messageType, messageBody) {
   users.forEach(function(userId) {
     if (connections[userId]) {
@@ -26,6 +20,7 @@ var emitToUsers = function(connections, users, messageType, messageBody) {
 var gameSocketServer = function(httpServer, sessionMiddleware) {
   var io = require('socket.io')(httpServer);
 
+  // Passport middleware
   io.use(function(socket, next) {
     sessionMiddleware(socket.request, {}, next);
   });
@@ -181,7 +176,7 @@ var acceptChallenge = function(connections, socket, user, challengeId) {
       }
 
       challenge.status = 'accepted';
-      var game = newGame(challenge.sender, challenge.receiver);
+      var game = new Game(chess.generateGame(challenge.sender, challenge.receiver));
 
       game.save(function(err) {
         if (err) {
