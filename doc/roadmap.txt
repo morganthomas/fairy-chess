@@ -4,7 +4,7 @@ Before demo day:
  [x] Implement check, checkmate, and stalemate.
  [x] Implement game ending logic.
  [ ] Finish implementing move rules.
- [ ] Display move record.
+ [x] Display move record.
  [ ] Display row/column numbers/letters.
  [x] Display captured pieces.
  [ ] Make nice front page.

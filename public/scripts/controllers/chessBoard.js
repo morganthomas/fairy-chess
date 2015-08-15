@@ -35,10 +35,10 @@ function displayPiece(game, myColor, loc, piece) {
   var $piece = makePieceImage(game, piece);
   $piece.addClass('chess-piece');
 
-  var ydir = myColor === 'white' ? 'top' : 'bottom';
-  var xdir = myColor === 'white' ? 'left' : 'right';
-  $piece.css(ydir, (7 - loc.row) * 100 + "%");
-  $piece.css(xdir, loc.col * 100 + "%");
+  var top = myColor === 'white' ? (game.boardInfo.numRows - 1) - loc.row : loc.row;
+  var left = myColor === 'black' ? (game.boardInfo.numCols - 1) - loc.col : loc.col;
+  $piece.css('top', top * 100 + "%");
+  $piece.css('left', left * 100 + "%");
 
   // Necessary to prevent the browser from interpreting the user as
   // attempting an image drag when they drag a piece.
@@ -51,19 +51,19 @@ function displayPiece(game, myColor, loc, piece) {
 
 // Converts mouse coordinates to a location on the chess board, assuming
 // the mouse coordinates are within the chess board.
-function mouseToLoc(myColor, mouseX, mouseY) {
+function mouseToLoc(game, myColor, mouseX, mouseY) {
   var squareSize = getSquareSize();
-  var boardPos = $("#chess-board").offset();
+  var boardPos = $(".chess-board-origin").offset();
 
   var col = Math.floor((mouseX - boardPos.left) / squareSize);
   var row = Math.floor((mouseY - boardPos.top) / squareSize);
 
   if (myColor === 'white') {
-    row = 7 - row;
+    row = (game.boardInfo.numRows - 1) - row;
   }
 
   if (myColor === 'black') {
-    col = 7 - col;
+    col = (game.boardInfo.numCols - 1) - col;
   }
 
   return { row: row, col: col };
@@ -107,7 +107,11 @@ chessApp.controller('chessBoardController', function($scope, challengeList, me) 
   var squareClasses = function(loc) {
     var classes = "";
 
-    if (loc.col === 0 && loc.row === 7) {
+    var origin = $scope.myColor === 'white' ?
+      { row: game.boardInfo.numRows - 1, col: 0 } :
+      { row: 0, col: game.boardInfo.numCols - 1 };
+
+    if (loc.row === origin.row && loc.col === origin.col) {
       classes += "chess-board-origin ";
     }
 
@@ -123,8 +127,6 @@ chessApp.controller('chessBoardController', function($scope, challengeList, me) 
 
     return classes;
   };
-
-  $scope.squareClasses = squareClasses;
 
   var resetDragState = function() {
     processingPieceDrag = false;
@@ -157,7 +159,7 @@ chessApp.controller('chessBoardController', function($scope, challengeList, me) 
   }
 
   var mousedownHandler = function(downEvent) {
-    dragStartLoc = mouseToLoc($scope.myColor, downEvent.pageX, downEvent.pageY);
+    dragStartLoc = mouseToLoc(game, $scope.myColor, downEvent.pageX, downEvent.pageY);
     processingPieceDrag = true;
     pieceBeingDragged = $(this);
     $(this).addClass("piece-being-dragged");
@@ -166,7 +168,7 @@ chessApp.controller('chessBoardController', function($scope, challengeList, me) 
 
   var mouseupHandler = function(upEvent) {
     if (processingPieceDrag) {
-      endLoc = mouseToLoc($scope.myColor, upEvent.pageX, upEvent.pageY);
+      endLoc = mouseToLoc(game, $scope.myColor, upEvent.pageX, upEvent.pageY);
       var state = getCurrentState(game);
 
       // XXX: Dummy code
@@ -192,7 +194,7 @@ chessApp.controller('chessBoardController', function($scope, challengeList, me) 
       $scope.$parent.pieceTypeToDisplay = null;
 
       var state = getCurrentState(game);
-      var loc = mouseToLoc($scope.myColor, moveEvent.pageX, moveEvent.pageY);
+      var loc = mouseToLoc(game, $scope.myColor, moveEvent.pageX, moveEvent.pageY);
 
       if (!isInBounds(state.board, loc)) {
         return;
@@ -223,6 +225,10 @@ chessApp.controller('chessBoardController', function($scope, challengeList, me) 
   var whenPlayControllerInitialized = function() {
     game = $scope.$parent.game;
     $scope.myColor = game.players.black === me._id ? 'black' : 'white';
+
+    // This is in here so that this function doesn't run until $scope.myColor,
+    // which it depends on, is set.
+    $scope.squareClasses = squareClasses;
 
     $scope.highlightBoard = makeEmptyBoard(game.boardInfo);
 
