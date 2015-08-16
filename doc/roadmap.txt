@@ -9,7 +9,7 @@ Before demo day:
  [x] Display captured pieces.
  [x] Make nice front page.
  [ ] Fix issues.
- [ ] Get rid of XXXs.
+ [x] Get rid of XXXs.
  [ ] Write rulebook.
  [ ] Test.
  [ ] Deploy.
