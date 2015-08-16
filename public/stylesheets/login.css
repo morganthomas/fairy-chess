@@ -1,0 +1,54 @@
+body {
+  background-image: url("/images/splash.jpg");
+  background-size: 1500px;
+}
+
+.page {
+  background: rgb(255,255,255);
+  background-color: rgba(255,255,255,0.8);
+  max-width: 850px;
+  margin: auto;
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+
+h1 {
+  margin: auto;
+  margin-bottom: 50px;
+  border-bottom: 1px solid grey;
+  max-width: 500px;
+  padding-bottom: 20px;
+  font-size: 30pt;
+}
+
+.header-image {
+  width: 32px;
+  height: 32px;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.tagline {
+  margin-bottom: 50px;
+  font-size: 18pt;
+}
+
+form {
+  position: relative;
+  left: -40px;
+  margin: auto;
+  max-width: 500px;
+  margin-bottom: 50px;
+}
+
+.login-header {
+  font-size: 16pt;
+}
+
+.rules-button {
+  margin-bottom: 50px;
+}
+
+.rules-button a {
+  padding: 10px 40px;
+}

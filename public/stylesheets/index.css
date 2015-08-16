@@ -1,3 +1,12 @@
+.challenge-instructions {
+  text-align: left;
+  margin: auto;
+  margin-top: 20px;
+  max-width: 400px;
+  font-size: 14pt;
+  line-height: 150%;
+}
+
 .back-button {
   float: left;
   padding-left: 20px;

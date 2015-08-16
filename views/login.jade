@@ -1,24 +1,58 @@
 extends layout
 
+block header
+  link(rel="stylesheet" href="/stylesheets/login.css")
+
 block content
   .container.page
-    //- Error comes through via the context passed when calling res.render('login', {...})
-    //- You'll see this in controllers/authentication.js
-    //- If the error exists, we'll display it.
-    if error
-      h3= error
+      //- Error comes through via the context passed when calling res.render('login', {...})
+      //- You'll see this in controllers/authentication.js
+      //- If the error exists, we'll display it.
+      if error
+        h3= error
+      
+      h1 Fairy Chess
+      
+      p.tagline Play variations on the game of chess. Different rules every time!
+      
+      p.rules-button
+        a(href="/rules").btn.btn-primary Learn More
 
-    //- Form for handling existing user logins.
-    h1 Existing Users
-    form(action="/auth/login", method="post")
-      input(type="text", name="username", placeholder="Username")
-      input(type="password", name="password", placeholder="Password")
-      input(type="submit")
-
-    //- Form for allowing new users to register.
-    h1 Register
-    form(action="/auth/signup", method="post")
-      input(type="text", name="username", placeholder="Username")
-      input(type="email", name="email", placeholder="Email")
-      input(type="password", name="password", placeholder="Password")
-      input(type="submit")
+      //- Form for allowing new users to register.
+      form.form-horizontal(action="/auth/signup", method="post")
+        //- .form-group
+        //-   .col-sm-offset-2.col-sm-10
+        //-     h2 Register
+        .form-group
+          label.control-label.col-sm-2(for="username") Username
+          .col-sm-10
+            input.form-control(type="text", name="username", placeholder="Username")
+        .form-group
+          label.control-label.col-sm-2(for="email") Email
+          .col-sm-10
+            input.form-control(type="email", name="email", placeholder="Email")
+        .form-group
+          label.control-label.col-sm-2(for="password") Password
+          .col-sm-10
+            input.form-control(type="password", name="password", placeholder="Password")
+        .form-group
+          .col-sm-offset-2.col-sm-10
+            input.btn.btn-success.form-control(type="submit" value="Get Access!")
+      
+      //- Form for handling existing user logins.
+      form.form-horizontal(action="/auth/login", method="post")
+        .form-group
+          .col-sm-offset-2.col-sm-10
+            p.login-header Already have an account? Log in!
+        .form-group
+          label.control-label.col-sm-2(for="username") Username
+          .col-sm-10
+            input.form-control(type="text", name="username", placeholder="Username")
+        .form-group
+          label.control-label.col-sm-2(for="password") Password
+          .col-sm-10
+            input.form-control(type="password", name="password", placeholder="Password")
+        .form-group
+          .col-sm-offset-2.col-sm-10
+            input.btn.btn-primary.form-control(type="submit" value="Log in")
+      

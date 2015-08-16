@@ -5,17 +5,25 @@ div
 //-   p Me: {{me}}
 //-   p Challenge list: {{challengeList}}
 
-h2 Games in Progress
+div.challenge-instructions(ng-if="challengeList.length === 0")
+  p To play a game:
+  ol
+    li Find a friend who is registered.
+    li Challenge them to a game.
+    li Wait for them to accept your challenge.
+    li Play!
+
+h2(ng-if="(challengeList | filter:isAccepted).length > 0") Games in Progress
 
 ul.list-group
   li.list-group-item(ng-repeat="challenge in challengeList | filter:isAccepted")
     div.h4
       span(ng-show="challenge.sender._id === challenge.game.players.white") <strong>{{formatUsername(challenge.sender)}}</strong> vs. <strong>{{formatUsername(challenge.receiver)}}</strong>
-      span(ng-show="challenge.sender._id === challenge.game.players.black") <strong>{{formatUsername(challenge.receiver)}}</strong> vs. <strong>{{formatUsername(challenge.sender)}}</strong
+      span(ng-show="challenge.sender._id === challenge.game.players.black") <strong>{{formatUsername(challenge.receiver)}}</strong> vs. <strong>{{formatUsername(challenge.sender)}}</strong>
     div
       a.btn.btn-success.play-game-button(href="#/play/{{challenge._id}}") Play
 
-h2 Open Challenges
+h2(ng-if="(challengeList | filter:isOpen).length > 0") Open Challenges
 
 ul.list-group
   li.list-group-item(ng-repeat="challenge in challengeList | filter:isOpen")

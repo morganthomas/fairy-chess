@@ -7,7 +7,7 @@ Before demo day:
  [x] Display move record.
  [x] Display row/column numbers/letters.
  [x] Display captured pieces.
- [ ] Make nice front page.
+ [x] Make nice front page.
  [ ] Fix issues.
  [ ] Get rid of XXXs.
  [ ] Write rulebook.
