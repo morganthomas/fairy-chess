@@ -171,7 +171,6 @@ chessApp.controller('chessBoardController', function($scope, challengeList, me) 
       endLoc = mouseToLoc(game, $scope.myColor, upEvent.pageX, upEvent.pageY);
       var state = getCurrentState(game);
 
-      // XXX: Dummy code
       $scope.$apply(function() {
         $scope.$parent.performMove(dragStartLoc, endLoc);
       });

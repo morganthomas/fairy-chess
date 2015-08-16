@@ -1505,8 +1505,6 @@ var nestableMoveControllers = {
   }
 }
 
-// XXX: hopper controllers
-
 //
 // SEMI-LEGAL MOVE GENERATION
 //

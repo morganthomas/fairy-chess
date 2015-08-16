@@ -30,7 +30,6 @@ var gameSocketServer = function(httpServer, sessionMiddleware) {
   var connections = {};
 
   io.on('connection', function(socket) {
-    // XXX: Look up the user
     var userId = socket.request.session && socket.request.session.passport &&
       socket.request.session.passport.user;
 
