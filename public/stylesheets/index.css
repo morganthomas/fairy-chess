@@ -89,6 +89,10 @@
   height: 100%;
 }
 
+.piece-being-dragged {
+  z-index: 2;
+}
+
 .noselect {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
