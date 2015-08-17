@@ -8,7 +8,8 @@ Before demo day:
  [x] Display row/column numbers/letters.
  [x] Display captured pieces.
  [x] Make nice front page.
- [ ] Fix issues.
+ [x] Fix issues.
+ [ ] Improve performance.
  [x] Get rid of XXXs.
  [ ] Write rulebook.
  [ ] Test.
@@ -16,3 +17,4 @@ Before demo day:
 
 Before my batch:
  [ ] Make video demo.
+ [ ] Finish/deploy 2048 demo.

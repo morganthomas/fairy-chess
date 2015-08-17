@@ -42,6 +42,8 @@ var gameSocketServer = function(httpServer, sessionMiddleware) {
         return; // XXX
       }
 
+      user.password = undefined;
+
       if (!connections[user.id]) {
         connections[user.id] = [];
       }
@@ -93,6 +95,9 @@ var sendInitialState = function(socket, user) {
       }
 
       challenges.forEach(function(challenge) {
+        challenge.sender.password = undefined;
+        challenge.receiver.password = undefined;
+
         socket.emit('create-challenge', challenge);
 
         if (challenge.status === 'accepted') {

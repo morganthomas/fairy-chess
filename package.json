@@ -11,5 +11,9 @@
     "passport": "~0.2.1",
     "passport-local": "~1.0.0",
     "socket.io": "^1.3.6"
+  },
+
+  "scripts": {
+    "deploy": "git pull bare master && forever stop app.js && forever start app.js"
   }
 }
