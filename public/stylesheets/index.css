@@ -128,12 +128,6 @@ body {
   line-height: 100%;
 }
 
-.main-header {
-  text-align: center;
-  /*color: #282828;*/
-  font-family: sans-serif;
-}
-
 #chess-dashboard {
   /*display: inline-block;*/
   padding: 0;
