@@ -22,10 +22,11 @@ chessApp.factory('challengeList', function(socket, $rootScope) {
 
   socket.on('create-challenge', function(challenge) {
     challengeList.unshift(challenge);
+    $rootScope.$broadcast('create-challenge', challenge);
   });
 
   socket.on('challenge-error', function(message) {
-    alert(message);
+    $rootScope.$broadcast('challenge-error', message);
   });
 
   socket.on('delete-challenge', function(challengeId) {

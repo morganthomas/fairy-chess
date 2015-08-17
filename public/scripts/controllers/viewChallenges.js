@@ -33,6 +33,13 @@ chessApp.controller('initiateChallengeController', function($scope, $location, s
 
   $scope.sendChallenge = function() {
     socket.emit('create-challenge', $scope.userToChallenge);
-    $location.path('/');
+    $scope.$on('create-challenge', function(e, challenge) {
+      $location.path('/');
+    });
+    $scope.$on('challenge-error', function(e, message) {
+      console.log(message);
+      alert(message);
+      $location.path('/');
+    })
   }
 });
