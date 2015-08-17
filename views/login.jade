@@ -5,11 +5,6 @@ block header
 
 block content
   .container.page
-      //- Error comes through via the context passed when calling res.render('login', {...})
-      //- You'll see this in controllers/authentication.js
-      //- If the error exists, we'll display it.
-      if error
-        h3= error
       
       h1 Fairy Chess
       
@@ -17,6 +12,12 @@ block content
       
       p.rules-button
         a(href="/rules").btn.btn-primary Learn More
+        
+      //- Error comes through via the context passed when calling res.render('login', {...})
+      //- You'll see this in controllers/authentication.js
+      //- If the error exists, we'll display it.
+      if error
+        h3.error= error
 
       //- Form for allowing new users to register.
       form.form-horizontal(action="/auth/signup", method="post")
