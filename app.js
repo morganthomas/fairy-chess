@@ -46,7 +46,7 @@ app.use(passportConfig.ensureAuthenticated);
 
 app.get('/', indexController.index);
 
-console.log("Test update 4!")
+console.log("Test update 5!")
 
 var server = app.listen(3000, function() {
 	console.log('Express server listening on port ' + server.address().port);
