@@ -9,11 +9,11 @@ Before demo day:
  [x] Display captured pieces.
  [x] Make nice front page.
  [x] Fix issues.
- [ ] Improve performance.
+ [x] Improve performance.
  [x] Get rid of XXXs.
  [ ] Write rulebook.
- [ ] Test.
- [ ] Deploy.
+ [x] Test.
+ [x] Deploy.
 
 Before my batch:
  [ ] Make video demo.
