@@ -39,7 +39,7 @@ chessApp.controller('initiateChallengeController', function($scope, $location, s
     $scope.$on('challenge-error', function(e, message) {
       console.log(message);
       alert(message);
-      $location.path('/');
+      $scope.userToChallenge = '';
     })
   }
 });
