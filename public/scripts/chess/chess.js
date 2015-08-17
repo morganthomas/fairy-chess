@@ -465,16 +465,14 @@ var generateMajorMovementParams = {
     var genLeaperMin = function() {
       return randomSelect('leaper min', [
         [1, 0.3],
-        [2, 0.4],
-        [3, 0.3]
+        [2, 0.7],
       ]);
     }
 
     var genLeaperMax = function() {
       return randomSelect('leaper max', [
-        [0, 0.4],
-        [1, 0.4],
-        [2, 0.2]
+        [0, 0.7],
+        [1, 0.3],
       ])
     }
 
@@ -494,9 +492,8 @@ var generateMajorMovementParams = {
   'leaprider': function() {
     var genLeapriderMin = function() {
       return randomSelect('leaprider min', [
-        [1, 0.3],
-        [2, 0.4],
-        [3, 0.3]
+        [1, 0.4]
+        [2, 0.6],
       ]);
     }
 
@@ -615,9 +612,8 @@ var generateMinorMovementParams = {
   'leaper': function() {
     var genLeaperMin = function() {
       return randomSelect('leaper min', [
-        [1, 0.3],
+        [1, 0.5],
         [2, 0.5],
-        [3, 0.2]
       ]);
     }
 
@@ -689,16 +685,15 @@ var generateQueenMovementParams = {
   'leaper': function() {
     var genLeaperMin = function() {
       return randomSelect('leaper min', [
-        [0, 0.5],
         [1, 0.5],
+        [2, 0.5],
       ]);
     }
 
     var genLeaperMax = function() {
       return randomSelect('leaper max', [
-        [1, 0.3],
+        [1, 0.6],
         [2, 0.4],
-        [3, 0.3]
       ])
     }
 
@@ -727,7 +722,6 @@ var generateQueenMovementParams = {
       return randomSelect('leaprider max', [
         [0, 0.3],
         [1, 0.4],
-        [2, 0.3]
       ]);
     }
 
