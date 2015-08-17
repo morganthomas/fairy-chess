@@ -4,57 +4,58 @@ block header
   link(rel="stylesheet" href="/stylesheets/login.css")
 
 block content
-  .container.page
-      
-      h1 Fairy Chess
-      
-      p.tagline Play chess-like games with computer-generated rules.
-      
-      p.rules-button
-        a(href="/rules").btn.btn-primary Learn More
+  .overlay
+    .container.page
         
-      //- Error comes through via the context passed when calling res.render('login', {...})
-      //- You'll see this in controllers/authentication.js
-      //- If the error exists, we'll display it.
-      if error
-        h3.error= error
+        h1 Fairy Chess
+        
+        p.tagline Play chess-like games with computer-generated rules.
+        
+        p.rules-button
+          a(href="/rules").btn.btn-primary Learn More
+          
+        //- Error comes through via the context passed when calling res.render('login', {...})
+        //- You'll see this in controllers/authentication.js
+        //- If the error exists, we'll display it.
+        if error
+          h3.error= error
 
-      //- Form for allowing new users to register.
-      form.form-horizontal(action="/auth/signup", method="post")
-        //- .form-group
-        //-   .col-sm-offset-2.col-sm-10
-        //-     h2 Register
-        .form-group
-          label.control-label.col-sm-2(for="username") Username
-          .col-sm-10
-            input.form-control(type="text", name="username", placeholder="Username")
-        .form-group
-          label.control-label.col-sm-2(for="email") Email
-          .col-sm-10
-            input.form-control(type="email", name="email", placeholder="Email")
-        .form-group
-          label.control-label.col-sm-2(for="password") Password
-          .col-sm-10
-            input.form-control(type="password", name="password", placeholder="Password")
-        .form-group
-          .col-sm-offset-2.col-sm-10
-            input.btn.btn-success.form-control(type="submit" value="Get Access!")
-      
-      //- Form for handling existing user logins.
-      form.form-horizontal(action="/auth/login", method="post")
-        .form-group
-          .col-sm-offset-2.col-sm-10
-            p.login-header Already have an account? Log in!
-        .form-group
-          label.control-label.col-sm-2(for="username") Username
-          .col-sm-10
-            input.form-control(type="text", name="username", placeholder="Username")
-        .form-group
-          label.control-label.col-sm-2(for="password") Password
-          .col-sm-10
-            input.form-control(type="password", name="password", placeholder="Password")
-        .form-group
-          .col-sm-offset-2.col-sm-10
-            input.btn.btn-primary.form-control(type="submit" value="Log in")
-            
-      p.image-credit <a href="https://www.flickr.com/photos/ranil_amarasuriya/2770502978/in/photolist-5dPvVw-5dPy1J-fGrawm-4dFdfn-83XobM-gkH3o6-5ysYyc-6mP261-28xzzH-JJg2-bPNmxi-8sDkc5-rAfXL1-o62zzh-nY346-diEgBF-7rf27T-kub97V-8RSEMP-bPNkuV-b1MAsT-aeWX3y-88HYhS-mWbbx-d1Fh4u-54YeTQ-ywKAA-9Cr2Wn-6X6tCe-78Fcrq-notxna-59oHmL-4vAfa5-4wtLYH-qFASJw-5hxoze-57n5qd-5Wa4Rv-qkeYK-5dPw31-41Cc-6v9Hj4-7iJYvz-6XatDu-angP2p-e9Mzmg-5AAQpm-nCgnzP-dLqHs-7NGJMX/">Photo by Ranil Amarasuriya (2007).</a> Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/2.0/">CC-BY-NC-SA</a>.
+        //- Form for allowing new users to register.
+        form.form-horizontal(action="/auth/signup", method="post")
+          //- .form-group
+          //-   .col-sm-offset-2.col-sm-10
+          //-     h2 Register
+          .form-group
+            label.control-label.col-sm-2(for="username") Username
+            .col-sm-10
+              input.form-control(type="text", name="username", placeholder="Username")
+          .form-group
+            label.control-label.col-sm-2(for="email") Email
+            .col-sm-10
+              input.form-control(type="email", name="email", placeholder="Email")
+          .form-group
+            label.control-label.col-sm-2(for="password") Password
+            .col-sm-10
+              input.form-control(type="password", name="password", placeholder="Password")
+          .form-group
+            .col-sm-offset-2.col-sm-10
+              input.btn.btn-success.form-control(type="submit" value="Get Access!")
+        
+        //- Form for handling existing user logins.
+        form.form-horizontal(action="/auth/login", method="post")
+          .form-group
+            .col-sm-offset-2.col-sm-10
+              p.login-header Already have an account? Log in!
+          .form-group
+            label.control-label.col-sm-2(for="username") Username
+            .col-sm-10
+              input.form-control(type="text", name="username", placeholder="Username")
+          .form-group
+            label.control-label.col-sm-2(for="password") Password
+            .col-sm-10
+              input.form-control(type="password", name="password", placeholder="Password")
+          .form-group
+            .col-sm-offset-2.col-sm-10
+              input.btn.btn-primary.form-control(type="submit" value="Log in")
+              
+        p.image-credit <a href="https://www.flickr.com/photos/ranil_amarasuriya/2770502978/in/photolist-5dPvVw-5dPy1J-fGrawm-4dFdfn-83XobM-gkH3o6-5ysYyc-6mP261-28xzzH-JJg2-bPNmxi-8sDkc5-rAfXL1-o62zzh-nY346-diEgBF-7rf27T-kub97V-8RSEMP-bPNkuV-b1MAsT-aeWX3y-88HYhS-mWbbx-d1Fh4u-54YeTQ-ywKAA-9Cr2Wn-6X6tCe-78Fcrq-notxna-59oHmL-4vAfa5-4wtLYH-qFASJw-5hxoze-57n5qd-5Wa4Rv-qkeYK-5dPw31-41Cc-6v9Hj4-7iJYvz-6XatDu-angP2p-e9Mzmg-5AAQpm-nCgnzP-dLqHs-7NGJMX/">Photo by Ranil Amarasuriya (2007).</a> Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/2.0/">CC-BY-NC-SA</a>.

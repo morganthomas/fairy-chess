@@ -8,6 +8,8 @@ body {
   padding: 50px;
   text-align: center;
   line-height: 100%;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
 }
 
 .horizontal-spacer {
