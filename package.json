@@ -14,6 +14,6 @@
   },
 
   "scripts": {
-    "deploy": "git pull bare master && forever stop app.js && forever start app.js"
+    "deploy": "git pull bare master && forever restart app.js"
   }
 }
