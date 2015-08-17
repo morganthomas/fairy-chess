@@ -7,6 +7,10 @@ var indexController = {
 		res.render('index');
 	},
 
+	intro: function(req, res) {
+		res.render('intro');
+	},
+
 	template: function(req, res) {
 		res.render('templates/' + req.params.template);
 	}

@@ -10,7 +10,7 @@ body {
 }
 
 .page {
-  background-color: rgba(32,32,32,0.7);
+  background-color: rgba(32,32,32,0.95);
   max-width: 850px;
   margin: auto;
   padding-top: 50px;
@@ -35,8 +35,16 @@ h1 {
 }
 
 .tagline {
-  margin-bottom: 50px;
   font-size: 18pt;
+}
+
+p {
+  max-width: 600px;
+  font-size: 12pt;
+  margin: auto;
+  line-height: 125%;
+  margin-bottom: 30px;
+
 }
 
 form {
@@ -51,12 +59,14 @@ form {
   font-size: 16pt;
 }
 
-.rules-button {
-  margin-bottom: 50px;
+.go-buttons {
+  margin-bottom: 30px;
 }
 
-.rules-button a {
+.go-buttons a {
   padding: 10px 40px;
+  margin-left: 10px;
+  margin-right: 10px
 }
 
 .image-credit {

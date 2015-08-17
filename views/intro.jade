@@ -1,0 +1,48 @@
+extends layout
+
+block header
+  link(rel="stylesheet" href="/stylesheets/login.css")
+
+block content
+  .overlay
+    .container.page
+        
+        h1 Fairy Chess
+        
+        p.tagline Play chess-like games with computer-generated rules.
+        
+        p.go-buttons
+          a(href="/rules").btn.btn-primary Rules
+          a(href="/auth/login").btn.btn-success Play
+        
+        p
+          | “Fairy chess” is a term for variations on the game of chess, where the pieces
+          | move by different rules.
+          | Here you can play computer-generated chess variations. The computer generates a set of
+          | rules, and you play against another human.
+        
+        p (Demo video goes here)
+        
+        //- p
+        //-  | To play with a friend, you simply send them a challenge.
+        //- 
+        //- p
+        //-   img(src="/images/send-challenge-cropped.png")
+        //- 
+        //- p They must accept your challenge.
+        //- 
+        //- p
+        //-   img(src="/images/challenge-receipt-cropped.png")
+        //- 
+        //- p Then, you play!
+        //- 
+        //- p
+        //-   img(src="/images/play-cropped.png")
+        //- 
+        //- Error comes through via the context passed when calling res.render('login', {...})
+        //- You'll see this in controllers/authentication.js
+        //- If the error exists, we'll display it.
+        if error
+          h3.error= error
+
+        p.image-credit <a href="https://www.flickr.com/photos/ranil_amarasuriya/2770502978/in/photolist-5dPvVw-5dPy1J-fGrawm-4dFdfn-83XobM-gkH3o6-5ysYyc-6mP261-28xzzH-JJg2-bPNmxi-8sDkc5-rAfXL1-o62zzh-nY346-diEgBF-7rf27T-kub97V-8RSEMP-bPNkuV-b1MAsT-aeWX3y-88HYhS-mWbbx-d1Fh4u-54YeTQ-ywKAA-9Cr2Wn-6X6tCe-78Fcrq-notxna-59oHmL-4vAfa5-4wtLYH-qFASJw-5hxoze-57n5qd-5Wa4Rv-qkeYK-5dPw31-41Cc-6v9Hj4-7iJYvz-6XatDu-angP2p-e9Mzmg-5AAQpm-nCgnzP-dLqHs-7NGJMX/">Photo by Ranil Amarasuriya (2007).</a> Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/2.0/">CC-BY-NC-SA</a>.

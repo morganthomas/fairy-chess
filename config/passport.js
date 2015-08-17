@@ -44,7 +44,7 @@ module.exports = {
     }
 
     if (res.redirect) {
-      res.redirect('/auth/login');
+      res.redirect('/intro');
     }
   }
 };

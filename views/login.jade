@@ -9,11 +9,6 @@ block content
         
         h1 Fairy Chess
         
-        p.tagline Play chess-like games with computer-generated rules.
-        
-        p.rules-button
-          a(href="/rules").btn.btn-primary Learn More
-          
         //- Error comes through via the context passed when calling res.render('login', {...})
         //- You'll see this in controllers/authentication.js
         //- If the error exists, we'll display it.
@@ -21,10 +16,10 @@ block content
           h3.error= error
 
         //- Form for allowing new users to register.
-        form.form-horizontal(action="/auth/signup", method="post")
-          //- .form-group
-          //-   .col-sm-offset-2.col-sm-10
-          //-     h2 Register
+        form.form-horizontal(action="/auth/signup", method="post", name="signup")
+          .form-group
+            .col-sm-offset-2.col-sm-10
+              p.login-header Create an account to play!
           .form-group
             label.control-label.col-sm-2(for="username") Username
             .col-sm-10

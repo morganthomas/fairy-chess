@@ -10,8 +10,15 @@
 .back-button {
   float: left;
   padding-left: 20px;
-  padding-top: 10px;
+  /*padding-top: 10px;*/
+  padding-bottom: 10px;
   font-size: 30pt;
+  margin-right: 15px;
+}
+
+#game-status {
+  overflow: hidden;
+  margin-left: 10px;
 }
 
 #chess-board {
