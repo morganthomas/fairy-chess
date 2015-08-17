@@ -1,6 +1,7 @@
 body {
+  background-color: #0f0400;
   background-image: url("/images/splash.jpg");
-  background-size: 100vw;
+  background-size: 100vmax;
   background-repeat: no-repeat;
 }
 
