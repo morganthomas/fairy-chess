@@ -1655,19 +1655,6 @@ var moveIsSemiLegalForPiece = function(game, state, move, piece) {
     });
 }
 
-var testSemiLegalMoves = function() {
-  var game = generateGame();
-  var state = getCurrentState(game);
-
-  forEachLoc(state.board, function(loc) {
-    var piece = getSquare(state.board, loc);
-
-    if (piece) {
-      console.log(semiLegalMovesForPiece(game, state, piece));
-    }
-  })
-}
-
 var moveIsSemiLegal = function(game, state, move) {
   return move.piece.color === state.playerToMove &&
     moveIsSemiLegalForPiece(game, state, move, move.piece);
@@ -1712,11 +1699,21 @@ function playerToMoveCanCaptureRoyalPiece(game, state) {
   })
 }
 
-// Says whether in the given state, the given player is in check.
+// Says whether in the given state, the given player is in check. Memoizes
+// the result.
 function isInCheck(game, state, playerColor) {
-  var newState = _.clone(state);
-  newState.playerToMove = colorOpponent(playerColor);
-  return playerToMoveCanCaptureRoyalPiece(game, newState);
+  if (state.check && state.check[playerColor] !== undefined) {
+    return state.check[playerColor];
+  } else {
+    if (!state.check) {
+      state.check = {};
+    }
+
+    var newState = _.clone(state);
+    newState.playerToMove = colorOpponent(playerColor);
+    state.check[playerColor] = playerToMoveCanCaptureRoyalPiece(game, newState);
+    return state.check[playerColor];
+  }
 }
 
 // Given a game and a state, lists all legal moves for the player to move.

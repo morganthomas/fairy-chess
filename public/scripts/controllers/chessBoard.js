@@ -66,7 +66,8 @@ function mouseToLoc(game, myColor, mouseX, mouseY) {
     col = (game.boardInfo.numCols - 1) - col;
   }
 
-  return { row: row, col: col };
+  var loc = { row: row, col: col };
+  return loc;
 }
 
 // This directive is attached to an element to trigger a function when the
@@ -180,6 +181,9 @@ chessApp.controller('chessBoardController', function($scope, challengeList, me) 
     }
   };
 
+  var pieceBeingHovered = null;
+  var pieceBeingHoveredMoves = null;
+
   var mousemoveHandler = function(moveEvent) {
     if (processingPieceDrag) {
       updateDraggedPiecePosition(moveEvent, false);
@@ -195,22 +199,33 @@ chessApp.controller('chessBoardController', function($scope, challengeList, me) 
       var state = getCurrentState(game);
       var loc = mouseToLoc(game, $scope.myColor, moveEvent.pageX, moveEvent.pageY);
 
-      if (!isInBounds(state.board, loc)) {
-        return;
+      var piece;
+
+      if (isInBounds(state.board, loc)) {
+        piece = getSquare(state.board, loc);
+      } else {
+        piece = null;
       }
 
-      var pieceBeingHovered = getSquare(state.board, loc);
+      if (pieceBeingHovered !== piece) {
+        pieceBeingHovered = piece;
+        pieceBeingHoveredMoves = null;
+
+        if (pieceBeingHovered) {
+          pieceBeingHoveredMoves = semiLegalMovesForPiece(game, state, pieceBeingHovered);
+        }
+      }
 
       if (pieceBeingHovered && !processingPieceDrag) {
         $scope.$parent.pieceTypeToDisplay = getPieceType(game, pieceBeingHovered);
 
-        // XXX: Show legal moves only
-        semiLegalMovesForPiece(game, state, pieceBeingHovered)
-          .forEach(function (move) {
-            // XXX: Assumes all moves have a "to" parameter. Currently correct,
-            // but may change.
-            setSquare($scope.highlightBoard, move.params.to, true);
-          });
+        // XXX: Show legal moves only?
+
+        pieceBeingHoveredMoves.forEach(function (move) {
+          // XXX: Assumes all moves have a "to" parameter. Currently correct,
+          // but may change.
+          setSquare($scope.highlightBoard, move.params.to, true);
+        });
       }
     })
   }
