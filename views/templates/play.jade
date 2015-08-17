@@ -1,6 +1,6 @@
 #game-status.alert.chess-dashboard-subpanel(class="{{statusClass()}}") {{statusText()}}
 
-.col-md-8.chess-board-container.noselect
+.col-xs-8.chess-board-container.noselect
   #chess-board(ng-controller="chessBoardController" elem-ready="boardReady()")
     .chess-square(ng-repeat="loc in boardLocs" class="{{squareClasses(loc)}}" elem-ready="squareReady()")
       .col-label.col-label-top(ng-if="loc.row === (myColor === 'black' ? 0 : game.boardInfo.numRows - 1)") {{colLabels[loc.col]}}
@@ -8,7 +8,7 @@
       .row-label.row-label-left(ng-if="loc.col === (myColor === 'white' ? 0 : game.boardInfo.numCols - 1)") {{loc.row + 1}}
       .row-label.row-label-right(ng-if="loc.col === (myColor === 'black' ? 0 : game.boardInfo.numCols - 1)") {{loc.row + 1}}
 
-.col-md-4
+.col-xs-4
   #chess-dashboard.panel.panel-primary
     .panel-heading <strong>{{players.white.username}}</strong> vs. <strong>{{players.black.username}}</strong>
     #piece-type-display.chess-dashboard-subpanel.panel.panel-primary(ng-show="pieceTypeToDisplay")
