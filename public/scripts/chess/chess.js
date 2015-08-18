@@ -1026,6 +1026,7 @@ var executeMoveType = {
   'selfmove': function(game, state, params, piece) {
     // XXX: Don't use _.cloneDeep; it's slow
     var newState = _.cloneDeep(state);
+    newState.check = undefined;
     var movedPiece = _.cloneDeep(piece);
     var targetPiece = getSquare(state.board, params.to);
 
@@ -1045,6 +1046,7 @@ var executeMoveType = {
   'exchange': function(game, state, params, piece) {
     // XXX: Don't use _.cloneDeep
     var newState = _.cloneDeep(state);
+    newState.check = undefined;
     var loc1 = piece.loc;
     var loc2 = params.to;
 
@@ -1702,7 +1704,7 @@ function playerToMoveCanCaptureRoyalPiece(game, state) {
 // Says whether in the given state, the given player is in check. Memoizes
 // the result.
 function isInCheck(game, state, playerColor) {
-  if (state.check && state.check[playerColor] !== undefined) {
+  if (state.check && state.check.hasOwnProperty(playerColor)) {
     return state.check[playerColor];
   } else {
     if (!state.check) {
@@ -1720,7 +1722,7 @@ function isInCheck(game, state, playerColor) {
 var legalMoves = function(game, state) {
   return semiLegalMoves(game, state).filter(function(move) {
     var newState = executeMove(game, state, move);
-    return !isInCheck(game, state, state.playerToMove);
+    return !isInCheck(game, newState, state.playerToMove);
   });
 }
 
