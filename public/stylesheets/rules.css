@@ -1,0 +1,17 @@
+.page {
+  max-width: 600px;
+}
+
+p {
+  text-align: left;
+  line-height: 150%;
+}
+
+.move-notation p {
+  text-align: center;
+  line-height: 125%;
+}
+
+h4 {
+  margin-top: 30px;
+}

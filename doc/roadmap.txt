@@ -11,10 +11,10 @@ Before demo day:
  [x] Fix issues.
  [x] Improve performance.
  [x] Get rid of XXXs.
- [ ] Write rulebook.
+ [x] Write rulebook.
+ [ ] Make video demo.
  [x] Test.
  [x] Deploy.
 
 Before my batch:
- [ ] Make video demo.
  [ ] Finish/deploy 2048 demo.

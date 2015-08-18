@@ -1,0 +1,271 @@
+extends layout
+
+block header
+  link(rel="stylesheet" href="/stylesheets/index.css")
+  link(rel="stylesheet" href="/stylesheets/rules.css")
+
+block content
+  .container.page
+    h1 Fairy Chess
+    
+    h2 Rules
+    
+    p
+     | In this game, you can play computer-generated variants of the game of
+     | chess, against other humans. Presently, these variants differ only in
+     | how the pieces move.
+    
+    h3 Starting a Game
+    
+    p
+     | To play a game, one player must send a <em>challenge</em> to another player.
+     | The recipient of the challenge, if they are logged in, will immediately see the challenge
+     | on their dashboard. They can accept or reject the challenge. If they accept the
+     | challenge, an untimed game begins immediately.
+    
+    p
+     | The sender of a challenge can withdraw the challenge at any time before the recipient
+     | accepts the challenge. In this case, the challenge is gone with no further effects.
+    
+    p
+     | When a game begins, the computer randomly assigns one player to the black pieces,
+     | and one player to the white pieces. The player who is white moves first.
+    
+    h3 Setup and Gameplay
+    
+    p
+     | The game is played on a standard 8x8 chess board, with the standard chess pieces,
+     | in the standard initial setup. What is different is that the pieces have
+     | movement rules different from the usual ones. At the start of the game, the
+     | computer randomly selects some movement rules from within a predefined set of
+     | parameters.
+    
+    h3 Movement Rules
+    
+    p
+     | Pieces are divided into categories describing how they move. These categories, or
+     | "movement rule types,"" do not correspond to the usual chess piece ranks
+     | (pawn, rook, etc.). Instead, the movement rule types are classes of ways that
+     | a piece could move.
+    
+    p
+     | A movement rule consists of a movement rule type and some parameters. The parameters
+     | describe more specifically how the piece moves. For each movement rule type,
+     | we define a notation for describing the parameters for that movement rule type.
+     | This notation is used by the game to describe the movement rules for pieces in
+     | the game.
+    
+    p
+     | Unless otherwise specified, pieces cannot pass through occupied squares,
+     | and they cannot land on squares occupied by friendly pieces. However,
+     | unless otherwise specified, they can land on squares occupied by enemy
+     | pieces, and this results in the enemy piece being captured.
+    
+    p The basic movement rule types are as follows.
+    
+    h4 Walkers
+    
+    p
+     | A walker can execute a certain number of single-space moves in a certain set of
+     | directions. These moves need not be in the same direction; a walker can execute
+     | moves in different directions in a single turn.
+     
+    p
+     | For example, one type
+     | of walker would be a piece which can execute one or two moves in any of the four cardinal
+     | directions.
+    
+    p
+     | Walker rules have three parameters: a set of directions, a minimum number of
+     | moves, and a maximum number of moves. For example, the piece described in the
+     | previous paragraph would have the four cardinal directions as its set of
+     | directions; a minimum number of moves of one; and a maximum number of moves
+     | of two. This would be notated as follows:
+    
+    .move-notation
+      p Walker (1-2 moves)
+      p →←↑↓
+    
+    h4 Riders
+    
+    p
+     | A rider can move an unlimited number of spaces in a single direction, on
+     | a given turn. Rooks, bishops, and queens in traditional chess are all examples
+     | of riders.
+    
+    p
+     | Rider rules have one parameter: a set of directions, which is the set of
+     | directions in which the rider can move. For example, a bishop in traditional
+     | chess is a rider whose set of directions is the four diagonal directions.
+     | This would be notated as follows:
+    
+    .move-notation
+      p Rider
+      p ↗↖↘↙
+    
+    h4 Leaper
+    
+    p
+     | The leaper is a generalization of the knight. A knight can move either
+     | one move horizontally and two vertically, or two moves horizontally and 
+     | one vertically. A leaper can move <em>n</em> moves horizontally and
+     | <em>m</em> moves vertically or <em>m</em> moves horizontally and
+     | <em>n</em> moves vertically, for positive integers <em>n</em> and <em>m</em>
+     | in some defined ranges.
+    
+    p
+     | Leaper rules have four parameters: minimum and maximum values for <em>n</em>,
+     | and minimum and maximum values for <em>m</em>. For example, if the minimum
+     | value of <em>n</em> is 1, the maximum value of <em>n</em> is 2, and the
+     | minimum and maximim values of <em>m</em> are both 2, this would be notated
+     | as:
+    
+     .move-notation
+       p Leaper
+       p 1 ≤ <i>n</i> ≤ 2
+       p 2 ≤ <i>m</i> ≤ 2
+    
+    h4 Leaprider
+    
+    p
+     | A leaprider is like a combination of a leaper and a rider. A leaprider
+     | moves like a leaper, except that you can pick any one of the moves that
+     | is possible for it and repeat that move an unlimited number of times.
+    
+    p
+     | The most famous example of a leaprider is the nightrider, which moves
+     | like a knight except that it can repeat its move. Leapriders have the same
+     | parameters and move notation as leapers. E.g., a nightrider is notated as:
+    
+    .move-notation
+      p Leaprider
+      p 1 ≤ <i>n</i> ≤ 1
+      p 2 ≤ <i>m</i> ≤ 2
+    
+    h4 Catapult
+    
+    p
+     | A catapult moves any number of squares in a fixed direction, like a rider.
+     | The difference is that a catapult must hop over a piece in the first
+     | square along its path. That is, for a catapult to move, there must be a
+     | piece (friendly or enemy) in the first square along its path, and it cannot land on this first
+     | square. After this first square, a catapult is blocked by other pieces in
+     | in the normal way.
+    
+    p
+     | Catapult rules have one parameter: a set of directions, which is the set of
+     | directions in which the catapult can move, as with riders. For example, a
+     | catapult that can move in the four cardinal directions would be notated
+     | as follows:
+    
+    .move-notation
+      p Catapult
+      p →←↑↓
+    
+    h4 Grasshopper
+    
+    p
+     | A grasshopper is like a catapult, except that it must hop over a piece
+     | right before its destination square, instead of a piece right after its
+     | origin square. For a grasshopper to move, there must be a piece
+     | (friendly or enemy) in the square right before the destination square
+     | along its path. Before this final square, a grasshopper is blocked by
+     | other pieces in the normal way.
+    
+    p
+     | Like catapult rules, grasshopper rules have one parameter: a set of directions.
+     | For example, a grasshopper that can move in all eight directions would be
+     | notated as:
+    
+    .move-notation
+      p Grasshopper
+      p ↖↑↓↗→←↘↙
+    
+    h4 Leapfrog
+    
+    p
+     | A leapfrog also moves by hopping, but each of its moves must be a hop.
+     | However, it can hop in non-uniform directions. It can emerge from a
+     | hop in a different direction than it entered the hop.
+     
+    p
+     | Precisely, a leapfrog can move up to a certain number of squares in non-uniform
+     | directions, like a walker, but every other square in its path must be occupied
+     | by a piece, including the first square in its path. The last square in its
+     | path cannot be occupied by a friendly piece.
+    
+    p
+     | A leapfrog rule has two parameters: a set of directions, and a limit 
+     | (a positive integer). A leapfrog can move on any path allowed by its
+     | set of directions which has an even number of squares up to twice the limit.
+     | (The limit describes the number of hops the leapfrog can do.)
+    
+    p
+     | For example, a leapfrog that can move in the four cardinal directions up to
+     | three hops would be notated as follows:
+    
+    .move-notation
+      p Leapfrog (limit 3)
+      p →←↑↓
+    
+    h4 Pieces with different move and capture rules
+    
+    p
+     | A piece can have different rules for moving and capturing. This means that
+     | the piece moves according to one rule when it's capturing, and another rule
+     | when it's not capturing. Pawns in chess are an example of this.
+    
+    h4 Combination pieces
+    
+    p
+     | A piece can also have two movement rules, both of which can be used for both
+     | capture and non-capture moves.
+    
+    h3 Special Abilities
+    
+    p
+     | In addition to having one of the movement rule types described above, a
+     | piece can have a "special ability." There are currently two special abilities:
+     | exchange and retreat.
+    
+    h4 Exchange
+    
+    p
+     | A piece with the exchange ability can swap places with any friendly piece
+     | of a specified, different type. For example, it would be possible for the
+     | bishop to have the ability to swap places with any friendly knight.
+    
+    h4 Retreat
+    
+    p
+     | A piece with the retreat ability can move, regardless of where it is,
+     | to an unoccupied square on
+     | the owning player's home row (the closest row to the owning player). 
+     | There are three variants on this rule. The piece can be able to retreat
+     | to any square on the home row; only to black squares; or only to white squares.
+    
+    h3 Royal pieces, check, checkmate, and stalemate
+    
+    p
+     | A "royal" piece is a piece which cannot be captured. A player loses if
+     | their opponent is able to capture one of their royal pieces. As in
+     | traditional chess, the king is royal. The queen is also sometimes royal.
+    
+    p
+     | A player's piece is "threatened" if the opponent could
+     | capture the piece on their next turn if nothing on the board changed.
+     | A player is "in check" if one of their royal pieces is threatened.
+     | A player who is in check must make a move which takes them out of check.
+     | If they have no such move, they are in "checkmate" and have lost the
+     | game.
+    
+    p
+     | If a player, on their turn, is not in check but has no legal moves, then
+     | "stalemate" is declared and the game is over. This condition is considered
+     | a draw.
+    
+    h3 Pawns and kings
+    
+    p
+     | Presently, pawns and kings do not vary their movement rules; they always
+     | move as they do in traditional chess.

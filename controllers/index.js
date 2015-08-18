@@ -11,6 +11,10 @@ var indexController = {
 		res.render('intro');
 	},
 
+	rules: function(req, res) {
+		res.render('rules');
+	},
+
 	template: function(req, res) {
 		res.render('templates/' + req.params.template);
 	}
