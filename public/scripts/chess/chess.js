@@ -492,7 +492,7 @@ var generateMajorMovementParams = {
   'leaprider': function() {
     var genLeapriderMin = function() {
       return randomSelect('leaprider min', [
-        [1, 0.4]
+        [1, 0.4],
         [2, 0.6],
       ]);
     }
