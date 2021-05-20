@@ -2,11 +2,7 @@
 , node-fairy-chess ? import ./default.nix { inherit pkgs; } }:
 let
   startScript = pkgs.writeScriptBin "start-sequence" ''
-    mkdir -p /tmp
-    mkdir -p /data/db
-    mkdir -p /var/log/mongodb
-    mongod --dbpath /data/db --logpath /var/log/mongodb/mongod.log --port 27108 --fork
-    tail -f /var/log/mongodb/mongod.log &
+    mkdir /tmp
     cd ${node-fairy-chess.package.outPath}/lib/node_modules/fairy-chess
     ${pkgs.nodejs}/bin/node app.js
     # ${pkgs.nodePackages.forever}/bin/forever start app.js
