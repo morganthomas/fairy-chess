@@ -10,7 +10,7 @@ var passportConfig = require('./config/passport');
 var indexController = require('./controllers/index');
 var authenticationController = require('./controllers/authentication');
 
-mongoose.connect('mongodb://localhost/fairychess');
+mongoose.connect('mongodb://127.0.0.1:27108/fairychess');
 
 var app = express();
 app.set('view engine', 'jade');
